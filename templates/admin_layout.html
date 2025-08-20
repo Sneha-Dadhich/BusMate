@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(180deg, #1f4e79, #163c5d);
+            color: white;
+            padding-top: 20px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Sidebar header/logo */
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Sidebar links */
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 25px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .sidebar a:hover, 
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+            border-left: 4px solid #00c4ff;
+        }
+
+        .sidebar a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 240px; /* keep space for sidebar */
+            flex-grow: 1;
+            padding: 30px;
+            background: #f4f7fa;
+            overflow-y: auto;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🚍 Bus Admin</h2>
+        </div>
+        <a href="{{ url_for('current_routes') }}" class="{% if active == 'routes' %}active{% endif %}">
+            <i class="fa-solid fa-route"></i> Current Routes
+        </a>
+        <a href="{{ url_for('manage_bus') }}" class="{% if active == 'bus' %}active{% endif %}">
+            <i class="fa-solid fa-bus"></i> Manage Bus
+        </a>
+        <a href="{{ url_for('manage_driver') }}" class="{% if active == 'driver' %}active{% endif %}">
+            <i class="fa-solid fa-id-card"></i> Manage Driver
+        </a>
+        <a href="{{ url_for('change_route') }}" class="{% if active == 'route' %}active{% endif %}">
+            <i class="fa-solid fa-pen-to-square"></i> Change Route
+        </a>
+    </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

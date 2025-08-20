@@ -1,0 +1,173 @@
+CREATE DATABASE bus_student_bond;
+USE bus_student_bond;
+SHOW Tables;
+
+DROP TABLE Bus_route;
+DROP TABLE Bus;
+DROP TABLE Driver;
+DROP TABLE Student;
+
+-- Step 1: Create Bus table
+CREATE TABLE Bus (
+    bus_id INT PRIMARY KEY,
+    bus_number VARCHAR(20),
+    capacity INT
+);
+-- Step 2: Create Driver table
+CREATE TABLE Driver (
+    driver_id INT PRIMARY KEY AUTO_INCREMENT,
+    driver_name VARCHAR(50),
+    phone_number VARCHAR(15)
+);
+-- Step 3: Create Bus_Route table with foreign keys
+CREATE TABLE Bus_Route (
+    route_id INT PRIMARY KEY AUTO_INCREMENT,
+    bus_id INT,
+    bus_stop VARCHAR(50),
+    arriving_time TIME,
+    route_date DATE,
+    driver_id INT,
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id),
+    FOREIGN KEY (driver_id) REFERENCES Driver(driver_id)
+);
+-- Step 3: Create Student (who are eligible for bus) table with foreign keys
+CREATE TABLE Student (
+    id VARCHAR(20) PRIMARY KEY UNIQUE,
+    name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    CHECK (email LIKE '%.22jdds%jietjodhpur.ac.in')
+);
+
+-- Insert data into Bus
+INSERT INTO Bus (bus_id, bus_number, capacity) VALUES 
+(1, 'RJ19PA9406', 50),
+(2, 'RJ14PB2103', 50),
+(3, 'RJ19PA5058', 50),
+(4, 'RJ19PC4554', 50),
+(5, 'RJ19PC4558', 50),
+(6, 'RJ19PA4902', 50),
+(7, 'RJ14PC5224', 50),
+(8, 'RJ19PA4093', 50),
+(9, 'RJ19PC4563', 50),
+(10, 'RJ19PA4087', 50),
+(11, 'RJ19PC4556', 50),
+(12, 'RJ19PA4089', 50),
+(13, 'RJ14PC5226', 50),
+(14, 'RJ19PC4562', 50),
+(15, 'RJ19PA4092', 50),
+(16, 'RJ19PA4082', 50),
+(17, 'RJ19PA3384', 50),
+(18, 'RJ19PA4900', 50),
+(19, 'RJ19PA5059', 50),
+(20, 'RJ14PC5221', 50);
+
+-- Insert data into Driver
+INSERT INTO Driver (driver_id, driver_name, phone_number) VALUES 
+(1, 'YASIN MOHAMMED', '9001899052'),
+(2, 'KAMAL SINGH KHICHI', '7742097515'),
+(3, 'SUBASH BISHNOI', '9252103338'),
+(4, 'PRAKASH BISHNOI', '9983276514'),
+(5, 'KAN SINGH', '9829955431'),
+(6, 'SARFUDEEN', '7742748661'),
+(7, 'IQBAL KHAN', '9001899043'),
+(8, 'LAXMAN RAM', '9001895784'),
+(9, 'MOHAN RAM JI', '9772730788'),
+(10, 'KISHAN PARIHAR', '6350507499'),
+(11, 'MUNNA KHAN', '7023498592'),
+(12, 'JOG SINGH', '9829972472'),
+(13, 'DWARKA DAS BHATI', '9829795596'),
+(14, 'FIROZ KHAN', '9829739256'),
+(15, 'RAKESH SEN', '9001899049'),
+(16, 'ANAND SINGH CHOUHAN', '9462568213'),
+(17, 'KALU RAM PRAJAPAT', '9950328795'),
+(18, 'HARI RAM JI', '8432685115'),
+(19, 'SHYAM LAL', '9982882251'),
+(20, 'BHAWANI SHANKAR', '8003667702');
+
+-- Insert data into Bus_Route
+INSERT INTO Bus_Route (route_id, bus_id, bus_stop, arriving_time, route_date, driver_id) VALUES 
+(1, 1, 'STADIUM', '08:30:00', '2025-01-14', 1),
+(2, 1, 'GHANTAGHAR', '08:33:00', '2025-01-14', 1),
+(3, 1, 'SOJATI GATE', '08:36:00', '2025-01-14', 1),
+(4, 1, 'JIET', '08:39:00', '2025-01-14', 1),
+(5, 2, 'KALIBERI', '08:30:00', '2025-01-14', 2),
+(6, 2, 'SOORSAGAR RIDIYAN FANTA', '08:33:00', '2025-01-14', 2),
+(7, 2, 'RAJBAGH CHOURAHA', '08:36:00', '2025-01-14', 2),
+(8, 2, 'MDM CIRCLE (UNDER BRIDGE)', '08:39:00', '2025-01-14', 2),
+(9, 2, 'JIET', '08:42:00', '2025-01-14', 2),
+(10, 3, 'MUNJASAR CHOURAHA', '08:30:00', '2025-01-14', 3),
+(11, 3, 'DP CHOURAHA', '08:33:00', '2025-01-14', 3),
+(12, 3, 'BHARAT SCHOOL', '08:36:00', '2025-01-14', 3),
+(13, 3, 'ASHIYANA AMARBAGH', '08:39:00', '2025-01-14', 3),
+(14, 3, 'JIET', '08:42:00', '2025-01-14', 3),
+(15, 4, 'MADHUBAN SABJI MANDI', '08:30:00', '2025-01-14', 4),
+(16, 4, 'KRISHNA NAGAR', '08:33:00', '2025-01-14', 4),
+(17, 4, 'VIVEK VIHAR GOKULDHAM', '08:36:00', '2025-01-14', 4),
+(18, 4, 'JIET', '08:39:00', '2025-01-14', 4),
+(19, 5, 'K MART', '08:30:00', '2025-01-14', 5),
+(20, 5, 'PF OFFICE', '08:33:00', '2025-01-14', 5),
+(21, 5, 'VEETRAG CITY', '08:36:00', '2025-01-14', 5),
+(22, 5, 'JHALAMAND CIRCLE', '08:39:00', '2025-01-14', 5),
+(23, 5, 'JIET', '08:42:00', '2025-01-14', 5),
+(24, 6, 'HANUMAN NAGAR CHOURAHA', '08:30:00', '2025-01-14', 6),
+(25, 6, 'BORANADA', '08:33:00', '2025-01-14', 6),
+(26, 6, 'SANGARIYA FANTA -II PHASE', '08:36:00', '2025-01-14', 6),
+(27, 6, 'JIET', '08:39:00', '2025-01-14', 6),
+(28, 7, 'BANAD CHOURAHA', '08:30:00', '2025-01-14', 7),
+(29, 7, 'KALVI PIYAU', '08:33:00', '2025-01-14', 7),
+(30, 7, 'GHANSHYAM DAIRY', '08:36:00', '2025-01-14', 7),
+(31, 7, 'JIET', '08:39:00', '2025-01-14', 7),
+(32, 8, 'GANESH GARH', '08:30:00', '2025-01-14', 8),
+(33, 8, 'DEEKSHA CLASSES', '08:33:00', '2025-01-14', 8),
+(34, 8, 'SECTION SEVEN', '08:36:00', '2025-01-14', 8),
+(35, 8, 'JIET', '08:39:00', '2025-01-14', 8),
+(36, 9, 'PASSPORT OFFICE (MILK MAN COLONY)', '08:30:00', '2025-01-14', 9),
+(37, 9, '21 SECTOR SUBJI MANDI', '08:33:00', '2025-01-14', 9),
+(38, 9, 'AIIMS ROAD', '08:36:00', '2025-01-14', 9),
+(39, 9, 'JIET', '08:39:00', '2025-01-14', 9),
+(40, 10, 'SHUBHAM HOSPITAL', '08:30:00', '2025-01-14', 10),
+(41, 10, '10 SECTOR', '08:33:00', '2025-01-14', 10),
+(42, 10, 'CAZRI', '08:36:00', '2025-01-14', 10),
+(43, 10, 'JIET', '08:39:00', '2025-01-14', 10),
+(44, 11, 'RTO OFFICE', '08:30:00', '2025-01-14', 11),
+(45, 11, 'RASALA ROAD', '08:33:00', '2025-01-14', 11),
+(46, 11, 'JIET', '08:36:00', '2025-01-14', 11),
+(47, 12, 'IDLE FITNESS', '08:30:00', '2025-01-14', 12),
+(48, 12, 'KUDI SECTOR 1 CENTRAL PARK', '08:33:00', '2025-01-14', 12),
+(49, 12, 'CENTRAL ACEDAMY KUDI, 5,6', '08:36:00', '2025-01-14', 12),
+(50, 12, 'JIET', '08:39:00', '2025-01-14', 12),
+(51, 13, 'VIDHYAASHRAM', '08:30:00', '2025-01-14', 13),
+(52, 13, 'AIRFORCE TEMPOSTAND', '08:33:00', '2025-01-14', 13),
+(53, 13, 'KV SCHOOL', '08:36:00', '2025-01-14', 13),
+(54, 13, 'JIET', '08:39:00', '2025-01-14', 13),
+(55, 14, 'CHAINPURA BAWRI', '08:30:00', '2025-01-14', 14),
+(56, 14, 'KN COLLEGE', '08:33:00', '2025-01-14', 14),
+(57, 14, 'JIET', '08:36:00', '2025-01-14', 14),
+(58, 15, 'JALORI GATE', '08:30:00', '2025-01-14', 15),
+(59, 15, 'SANISCHAR JI KA THAN', '08:33:00', '2025-01-14', 15),
+(60, 15, 'JIET', '08:36:00', '2025-01-14', 15),
+(61, 16, 'CHOPASANI GAO', '08:30:00', '2025-01-14', 16),
+(62, 16, 'P&T CIRCLE', '08:33:00', '2025-01-14', 16),
+(63, 16, 'SHASTRI NAGAR', '08:36:00', '2025-01-14', 16),
+(64, 16, 'JIET', '08:39:00', '2025-01-14', 16),
+(65, 17, 'PS GARDEN MATHA KA THAN', '08:30:00', '2025-01-14', 17),
+(66, 17, 'BHADASIYA PETROL PUMP', '08:33:00', '2025-01-14', 17),
+(67, 17, 'LOCOROAD', '08:36:00', '2025-01-14', 17),
+(68, 17, 'JIET', '08:39:00', '2025-01-14', 17),
+(69, 18, 'NAYAPURA HOSPITAL', '08:30:00', '2025-01-14', 18),
+(70, 18, 'POATA ABHAY DAYS', '08:33:00', '2025-01-14', 18),
+(71, 18, 'JIET', '08:36:00', '2025-01-14', 18),
+(72, 19, 'GANDHINAGAR', '08:30:00', '2025-01-14', 19),
+(73, 19, 'SAI MANDIR HOUSING BOARD', '08:33:00', '2025-01-14', 19),
+(74, 19, 'ROHAT', '08:36:00', '2025-01-14', 19),
+(75, 19, 'JIET', '08:39:00', '2025-01-14', 19),
+(76, 20, 'KALU NAGAR', '08:30:00', '2025-01-14', 20),
+(77, 20, 'NAHAR BUS STAND', '08:33:00', '2025-01-14', 20),
+(78, 20, 'RAILWAY STATION', '08:36:00', '2025-01-14', 20),
+(79, 20, "ST PAUL'S SCHOOL", '08:39:00', '2025-01-14', 20),
+(80, 20, 'JIET', '08:42:00', '2025-01-14', 20);
+
+SELECT * FROM Bus;
+SELECT * FROM Driver;
+SELECT * FROM Bus_route;

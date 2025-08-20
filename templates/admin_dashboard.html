@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            height: 100vh;
+            background: #f4f6f9;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #1e293b; /* dark navy */
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+        }
+
+        .sidebar h2 {
+            margin: 0 0 20px;
+            font-size: 20px;
+            text-align: center;
+        }
+
+        .sidebar a {
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            display: block;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover {
+            background: #334155;
+            color: #fff;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 240px; /* same as sidebar width + padding */
+            padding: 30px;
+            flex: 1;
+        }
+
+        .main-content h2 {
+            font-size: 26px;
+            color: #1e293b;
+        }
+
+        .main-content p {
+            font-size: 16px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <a href="{{ url_for('manage_bus') }}">🚌 Manage Buses</a>
+        <a href="{{ url_for('manage_driver') }}">🙋🏻‍♂️ <span>Manage Driver</span></a>
+        <a href="{{ url_for('manage_routes') }}">🛣 Manage Routes</a>
+        <a href="{{ url_for('logout') }}">🚪 Logout</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h2>Welcome, Admin</h2>
+        <p>Here you can manage buses, routes, students, and view analytics.</p>
+    </div>
+</body>
+</html>

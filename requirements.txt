@@ -1,0 +1,7 @@
+Flask
+Flask-MySQLdb
+gunicorn
+Werkzeug
+Jinja2
+click
+itsdangerous
