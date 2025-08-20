@@ -14,7 +14,7 @@ A Flask + MySQL web application to manage **college bus routes** with dedicated 
 ## 🛠️ Tech Stack
 - **Backend:** Flask (Python)
 - **Database:** MySQL
-- **Frontend:** HTML, CSS, Bootstrap
+- **Frontend:** HTML, CSS, JavaScript
 - **Other:** Jinja2 templates
 
 ## 📂 Project Structure
