@@ -4,15 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - User Management</title>
+  <title>Admin Panel - Driver Management</title>
   <style>
-
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Inter', sans-serif;
       display: flex;
       height: 100vh;
-      background: #f4f6f9;
+      background: #f9fafb;
     }
 
     /* Sidebar */
@@ -74,54 +73,76 @@
       background: none;
       border: none;
       color: #fff;
-      font-size: 20px;
+      font-size: 22px;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       align-self: flex-end;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      transform: rotate(90deg);
     }
 
     /* Main Content */
     .main-content {
-      margin-left: 220px;
+      margin-left: 230px;
       padding: 30px;
       flex: 1;
       transition: margin-left 0.3s ease;
     }
 
     .main-content.collapsed {
-      margin-left: 60px;
+      margin-left: 70px;
     }
 
     .main-content h2 {
       font-size: 26px;
-      color: #1e293b;
+      color: #14532d;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      font-weight: 600;
     }
 
+    /* Form Section */
     #formContainer {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      display: inline-block;
     }
 
     label {
       display: block;
-      margin-top: 10px;
+      margin-top: 12px;
+      font-weight: 500;
+      color: #374151;
     }
 
     input,
     textarea,
     select {
       width: 300px;
-      padding: 8px;
+      padding: 10px;
       margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
       font-size: 14px;
+      background-color: #f9fafb;
+      transition: border-color 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #16a34a;
+      outline: none;
     }
 
     button {
-      margin: 10px 5px;
+      margin: 5px;
       padding: 8px 16px;
       background-color: #2563eb;
       color: #fff;
@@ -134,11 +155,21 @@
       background-color: #1d4ed8;
     }
 
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
+    /* Table Styling */
+    /* Table Container for Responsiveness */
+    .table-container {
       width: 100%;
-      max-width: 900px;
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
     }
 
     th,
@@ -148,17 +179,17 @@
       text-align: center;
     }
 
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+
     th {
-      background-color: #2563eb;
-      color: #fff;
-    }
-
-    .action-btn {
-      background-color: #2563eb;
-    }
-
-    .action-btn:hover {
-      background-color: #1d4ed8;
+      background-color: #04AA6D;
+      color: white;
     }
 
     .delete-btn {
@@ -185,7 +216,7 @@
       input,
       textarea,
       select {
-        width: 60%;
+        width: 80%;
       }
 
       table {
@@ -209,22 +240,6 @@
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
     <h2>Driver Data Management</h2>
-
-    <div id="formContainer">
-      <label for="busIdInput">Driver ID</label>
-      <input type="text" id="busIdInput" placeholder="Enter Bus ID...">
-
-      <label for="busNumberInput">Driver Name</label>
-      <input type="text" id="busNumberInput" placeholder="Enter Bus Number...">
-
-      <label for="busCapacityInput">Driver Phone Number</label>
-      <input type="text" id="busCapacityInput" placeholder="Enter Bus Capacity...">
-
-      </select>
-
-      <br>
-      <button onclick="addData()">Add</button>
-    </div>
 
     <table id="outputTable">
       <thead>

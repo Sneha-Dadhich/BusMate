@@ -2,11 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel - User Management</title>
   <style>
-
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -121,7 +120,7 @@
     }
 
     button {
-      margin: 10px 5px;
+      margin: 5px;
       padding: 8px 16px;
       background-color: #2563eb;
       color: #fff;
@@ -134,31 +133,39 @@
       background-color: #1d4ed8;
     }
 
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
+    /* Table Container for Responsiveness */
+    .table-container {
       width: 100%;
-      max-width: 900px;
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
     }
 
     th,
     td {
       border: 1px solid #ddd;
       padding: 10px;
-      text-align: center;
+      text-align: left;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
     }
 
     th {
-      background-color: #2563eb;
-      color: #fff;
-    }
-
-    .action-btn {
-      background-color: #2563eb;
-    }
-
-    .action-btn:hover {
-      background-color: #1d4ed8;
+      background-color: #04AA6D;
+      color: white;
     }
 
     .delete-btn {
@@ -185,11 +192,16 @@
       input,
       textarea,
       select {
-        width: 60%;
+        width: 80%;
       }
 
       table {
         font-size: 12px;
+      }
+
+      th,
+      td {
+        padding: 6px;
       }
     }
   </style>
@@ -210,63 +222,106 @@
   <div class="main-content" id="mainContent">
     <h2>Route Data Management</h2>
 
-  <div id="formContainer">
-    <label for="driverSelect">Bus ID</label>
+    <div style="text-align: right; margin-bottom: 15px;">
+      <button id="addBtn" onclick="addNewRow()">➕ Add New Route</button>
+    </div>
+
+
+    <div id="formContainer">
+      <label for="driverSelect">Bus ID</label>
       <select id="driverSelect" onchange="filterBus()">
         <option value="">-- All Buses --</option>
-          {% for bus in buses %}
-            <option value="{{ bus.bus_id }}" {% if selected_bus_id == bus.bus_id|string %}selected{% endif %}>
-            {{ bus.bus_id }}
-            </option>
-          {% endfor %}
+        {% for bus in buses %}
+        <option value="{{ bus.bus_id }}" {% if selected_bus_id == bus.bus_id|string %}selected{% endif %}>
+          {{ bus.bus_id }}
+        </option>
+        {% endfor %}
       </select>
+    </div>
+
+    <div class="table-container">
+      <table id="outputTable">
+        <thead>
+          <tr>
+            <th>Bus ID</th>
+            <th>Bus Stop</th>
+            <th>Arriving Time</th>
+            <th>Capacity</th>
+            <th>Driver Name</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bus_route in bus_route_data %}
+          <tr>
+            <td>{{ bus_route.bus_id }}</td>
+            <td>{{ bus_route.bus_stop }}</td>
+            <td>{{ bus_route.arriving_time }}</td>
+            <td>{{ bus_route.capacity }}</td>
+            <td>{{ bus_route.driver_name }}</td>
+            <td>
+              <!-- <button class="action-btn" onclick="editRow(this)">Edit</button> -->
+              <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <table id="outputTable">
-  <thead>
-    <tr>
-      <th>Bus ID</th>
-      <th>Bus Number</th>
-      <th>Bus Stop</th>
-      <th>Capacity</th>
-      <th>Driver Name</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-    <tbody>
-      {% for bus_route in bus_route_data %}
-      <tr>
-        <td>{{ bus_route.bus_id }}</td>
-        <td>{{ bus_route.bus_stop }}</td>
-        <td>{{ bus_route.arriving_time }}</td>
-        <td>{{ bus_route.capacity }}</td>
-        <td>{{ bus_route.driver_name }}</td>
-        <td>
-          <button class="action-btn" onclick="editData(this)">Edit</button>
-          <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
   <script>
-    function toggleSidebar() 
-    {
+    function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("collapsed");
       document.getElementById("mainContent").classList.toggle("collapsed");
     }
 
-    function filterBus() 
-    {
+    function filterBus() {
       const busId = document.getElementById("driverSelect").value;
       if (busId) {
         window.location.href = `{{ url_for('manage_routes') }}?bus_id=${busId}`;
       } else {
         window.location.href = `{{ url_for('manage_routes') }}`;
-      } 
+      }
     }
-    
+
+    // Make Table Editable
+    function editRow(button) {
+      const row = button.closest("tr");
+      const cells = row.querySelectorAll("td:not(:last-child)");
+
+    function addNewRow() {
+      const table = document.getElementById("outputTable").getElementsByTagName("tbody")[0];
+      const newRow = table.insertRow();
+
+      newRow.innerHTML = `
+        <td contenteditable="true" style="background:#fef3c7;"></td>
+        <td contenteditable="true" style="background:#fef3c7;"></td>
+        <td contenteditable="true" style="background:#fef3c7;"></td>
+        <td contenteditable="true" style="background:#fef3c7;"></td>
+        <td contenteditable="true" style="background:#fef3c7;"></td>
+        <td>
+          <button onclick="saveNewRow(this)" style="background:#10b981;">Save</button>
+          <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+        </td>
+      `;
+      }
+
+
+      // Collect edited data
+      const data = Array.from(cells).map(td => td.textContent.trim());
+      console.log("Updated Row Data:", data);
+      // TODO: Send data via fetch() or AJAX POST to Flask route
+      }
+      
+
+    function deleteData(button) {
+      const row = button.closest("tr");
+      if (confirm("Are you sure you want to delete this record?")) {
+        row.remove();
+        // TODO: Send DELETE request to Flask backend
+      }
+    }
   </script>
 </body>
 

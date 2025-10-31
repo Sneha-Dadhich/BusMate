@@ -38,7 +38,7 @@ def admin_login():
 def admin_dashboard():
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
-    return render_template('admin_dashboard.html')
+    return render_template('manage_bus.html')
 
 @app.route('/admin/current_routes')
 def current_routes():
@@ -181,22 +181,42 @@ def register():
         elif not re.match(r'^[A-Za-z0-9_]+$', username):
             msg = 'Username must contain only letters, numbers, and underscores.'
         else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM Student WHERE name = %s', (username,))
-            account = cursor.fetchone()
+            try:
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute('SELECT * FROM Student WHERE name = %s', (username,))
+                account = cursor.fetchone()
 
-            if account:
-                msg = 'Account already exists!'
-            else:
-                hashed_password = generate_password_hash(password)
-                # here I am using the email as id (For now)
-                cursor.execute('INSERT INTO Student (id, name, password, email) VALUES (%s, %s, %s, %s)', 
-                               (fr"JIET/{email[-25:-26]}/{email[-22:-24]}/{email[-18:-21]}", username, hashed_password, email))
-                # sneha.22jdds030@jietjodhpur.ac.in
-                mysql.connection.commit()
-                msg = 'You have successfully registered!'
-                return redirect(url_for('login'))
+                if account:
+                    msg = 'Account already exists!'
+                else:
+                    hashed_password = generate_password_hash(password)
+
+                    # Example ID creation using part of the email
+                    student_id = f"JIET/{email[-25:-26]}/{email[-22:-24]}/{email[-18:-21]}"
+
+                    cursor.execute(
+                        'INSERT INTO Student (id, name, password, email) VALUES (%s, %s, %s, %s)',
+                        (student_id, username, hashed_password, email)
+                    )
+
+                    mysql.connection.commit()
+                    msg = 'You have successfully registered!'
+                    return redirect(url_for('login'))
+
+            except MySQLdb.OperationalError as e:
+                if e.args[0] == 3819:
+                    msg = "Please use only college id !!!"
+                else:
+                    msg = f"Database error: {e}"
+
+            except Exception as e:
+                msg = f"An unexpected error occurred: {str(e)}"
+
+            finally:
+                cursor.close()
+
     return render_template('register.html', msg=msg)
+
 
 # -------------------- BUS FINDER --------------------
 @app.route('/stop', methods=['GET', 'POST'])
@@ -231,6 +251,7 @@ def dashboard():
     if 'loggedin' in session:
         return render_template('index.html', username=session['username'])
     return redirect(url_for('login'))
+
 
 # -------------------- MAIN --------------------
 if __name__ == '__main__':

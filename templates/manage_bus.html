@@ -2,11 +2,10 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel - User Management</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Bus Data Management</title>
   <style>
-
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -102,6 +101,13 @@
     #formContainer {
       text-align: center;
       margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     label {
@@ -112,7 +118,7 @@
     input,
     textarea,
     select {
-      width: 300px;
+      width: 90%;
       padding: 8px;
       margin-top: 5px;
       border: 1px solid #ccc;
@@ -121,7 +127,7 @@
     }
 
     button {
-      margin: 10px 5px;
+      margin: 5px;
       padding: 8px 16px;
       background-color: #2563eb;
       color: #fff;
@@ -134,11 +140,20 @@
       background-color: #1d4ed8;
     }
 
-    table {
-      border-collapse: collapse;
-      margin: 0 auto;
+    /* Table Container for Responsiveness */
+    .table-container {
       width: 100%;
-      max-width: 900px;
+      overflow-x: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
     }
 
     th,
@@ -148,17 +163,17 @@
       text-align: center;
     }
 
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f5f9;
+    }
+
     th {
-      background-color: #2563eb;
-      color: #fff;
-    }
-
-    .action-btn {
-      background-color: #2563eb;
-    }
-
-    .action-btn:hover {
-      background-color: #1d4ed8;
+      background-color: #04AA6D;
+      color: white;
     }
 
     .delete-btn {
@@ -185,11 +200,16 @@
       input,
       textarea,
       select {
-        width: 60%;
+        width: 80%;
       }
 
       table {
         font-size: 12px;
+      }
+
+      th,
+      td {
+        padding: 6px;
       }
     }
   </style>
@@ -210,52 +230,33 @@
   <div class="main-content" id="mainContent">
     <h2>Bus Data Management</h2>
 
-    <div id="formContainer">
-      <label for="busIdInput">Bus ID</label>
-      <input type="text" id="busIdInput" placeholder="Enter Bus ID...">
-
-      <label for="busNumberInput">Bus Number</label>
-      <input type="text" id="busNumberInput" placeholder="Enter Bus Number...">
-
-      <label for="busCapacityInput">Bus Capacity</label>
-      <input type="number" id="busCapacityInput" placeholder="Enter Bus Capacity...">
-
-      <label for="driverSelect">Driver</label>
-      <select id="driverSelect">
-        {% for driver in drivers %}
-        <option value="{{ driver.driver_id }}">{{ driver.driver_name }}</option>
-        {% endfor %}
-      </select>
-
-      <br>
-      <button onclick="addData()">Add</button>
+    <div class="table-container">
+      <table id="outputTable">
+        <thead>
+          <tr>
+            <th>Bus ID</th>
+            <th>Bus Number</th>
+            <th>Driver Name</th>
+            <!-- <th>Capacity</th> -->
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bus in buses %}
+          <tr>
+            <td>{{ bus.bus_id }}</td>
+            <td>{{ bus.bus_number }}</td>
+            <td>{{ bus.driver_name }}</td>
+            <!-- <td>{{ bus.capacity }}</td> -->
+            <td>
+              <button class="action-btn" onclick="editRow(this)">Edit</button>
+              <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-
-    <table id="outputTable">
-      <thead>
-        <tr>
-          <th>Bus ID</th>
-          <th>Bus Number</th>
-          <th>Driver Name</th>
-          <th>Capacity</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for bus in buses %}
-        <tr>
-          <td>{{ bus.bus_id }}</td>
-          <td>{{ bus.bus_number }}</td>
-          <td>{{ bus.driver_name }}</td>
-          <td>{{ bus.capacity }}</td>
-          <td>
-            <button class="action-btn" onclick="editData(this)">Edit</button>
-            <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
 
   <script>
@@ -263,7 +264,74 @@
       document.getElementById("sidebar").classList.toggle("collapsed");
       document.getElementById("mainContent").classList.toggle("collapsed");
     }
+
+    // Editable Table
+    function editRow(button) {
+      const row = button.closest("tr");
+      const cells = row.querySelectorAll("td:not(:last-child)");
+
+      if (button.textContent === "Edit") {
+        cells.forEach(td => {
+          td.setAttribute("contenteditable", "true");
+          td.style.background = "#fef3c7"; // light yellow
+        });
+        button.textContent = "Save";
+        button.style.background = "#10b981"; // green
+      } else {
+        cells.forEach(td => {
+          td.removeAttribute("contenteditable");
+          td.style.background = "";
+        });
+        button.textContent = "Edit";
+        button.style.background = "#2563eb";
+
+        // Collect data
+        const data = Array.from(cells).map(td => td.textContent.trim());
+        console.log("Updated Bus Data:", data);
+        // TODO: send data to Flask backend using fetch() POST
+      }
+    }
+
+    function deleteData(button) {
+      const row = button.closest("tr");
+      if (confirm("Are you sure you want to delete this record?")) {
+        row.remove();
+        // TODO: send DELETE request to Flask backend
+      }
+    }
+
+    function addData() {
+      const table = document.getElementById("outputTable").querySelector("tbody");
+      const busId = document.getElementById("busIdInput").value;
+      const busNumber = document.getElementById("busNumberInput").value;
+      const capacity = document.getElementById("busCapacityInput").value;
+      const driver = document.getElementById("driverSelect").selectedOptions[0].text;
+
+      if (!busId || !busNumber || !capacity) {
+        alert("Please fill all fields.");
+        return;
+      }
+
+      const newRow = `
+        <tr>
+          <td>${busId}</td>
+          <td>${busNumber}</td>
+          <td>${driver}</td>
+          <td>${capacity}</td>
+          <td>
+            <button class="action-btn" onclick="editRow(this)">Edit</button>
+            <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+          </td>
+        </tr>
+      `;
+      table.insertAdjacentHTML("beforeend", newRow);
+
+      // Clear inputs
+      document.getElementById("busIdInput").value = "";
+      document.getElementById("busNumberInput").value = "";
+      document.getElementById("busCapacityInput").value = "";
+      document.getElementById("driverSelect").selectedIndex = 0;
+    }
   </script>
 </body>
-
 </html>
