@@ -3,7 +3,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
-
+import qrcode
+import os
 
 # Create an app instance
 app = Flask(__name__)  
@@ -139,19 +140,19 @@ def change_routes():
 def login():
     msg = ''
     if request.method == 'POST':
-        username = request.form.get('username')
+        email = request.form.get('email')
         password = request.form.get('password')
 
-        if not username or not password:
+        if not email or not password:
             msg = 'Please fill out all fields.'
         else:
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM Student WHERE name = %s', (username,))
+            cursor.execute('SELECT * FROM student WHERE email = %s', (email,))
             account = cursor.fetchone()
 
             if account and check_password_hash(account['password'], password):
                 session['loggedin'] = True
-                session['id'] = account['id']
+                # session['id'] = account['id']
                 session['username'] = account['name']
                 return redirect(url_for('buses_for_stop'))
             else:
@@ -167,58 +168,94 @@ def logout():
 # -------------------- REGISTER --------------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    bus_stops = ['Paota', 'Ratanada', 'AIIMS', 'MIA', 'Chopsani']
     msg = ''
+
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        student_id = request.form.get('student_id')
+        name = request.form.get('name')
+        department = request.form.get('department')
+        year = request.form.get('year')
+        bus_stop = request.form.get('bus_stop')
         email = request.form.get('email')
+        password = request.form.get('password')
 
-        # Validations
-        if not username or not password or not email:
+        if not all([student_id, name, department, year, bus_stop, email, password]):
             msg = 'Please fill out all fields.'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address!'
-        elif not re.match(r'^[A-Za-z0-9_]+$', username):
-            msg = 'Username must contain only letters, numbers, and underscores.'
         else:
-            try:
-                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-                cursor.execute('SELECT * FROM Student WHERE name = %s', (username,))
-                account = cursor.fetchone()
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('SELECT * FROM student WHERE email = %s', (email,))
+            account = cursor.fetchone()
 
-                if account:
-                    msg = 'Account already exists!'
-                else:
-                    hashed_password = generate_password_hash(password)
+            if account:
+                msg = 'Account already exists!'
+            else:
+                hashed_password = generate_password_hash(password)
+                query = """INSERT INTO student 
+                           (student_id, name, department, year, bus_stop, email, password)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+                values = (student_id, name, department, year, bus_stop, email, hashed_password)
 
-                    # Example ID creation using part of the email
-                    student_id = f"JIET/{email[-25:-26]}/{email[-22:-24]}/{email[-18:-21]}"
+                cursor.execute(query, values)
+                mysql.connection.commit()
+                msg = 'Registered successfully!'
+            cursor.close()
 
-                    cursor.execute(
-                        'INSERT INTO Student (id, name, password, email) VALUES (%s, %s, %s, %s)',
-                        (student_id, username, hashed_password, email)
-                    )
+    return render_template('register.html', msg=msg, bus_stops=bus_stops)
 
-                    mysql.connection.commit()
-                    msg = 'You have successfully registered!'
-                    return redirect(url_for('login'))
+# -------------------- Student functions --------------------
 
-            except MySQLdb.OperationalError as e:
-                if e.args[0] == 3819:
-                    msg = "Please use only college id !!!"
-                else:
-                    msg = f"Database error: {e}"
+# Folder to store generated QR codes
+QR_FOLDER = 'static/qrcodes'
+os.makedirs(QR_FOLDER, exist_ok=True)
 
-            except Exception as e:
-                msg = f"An unexpected error occurred: {str(e)}"
+def generate_qr(student_id):
+    """Generate and save QR code image for a student."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(student_id)
+    qr.make(fit=True)
 
-            finally:
-                cursor.close()
+    img = qr.make_image(fill_color="black", back_color="white")
+    qr_path = os.path.join(QR_FOLDER, f"{student_id}.png")
+    img.save(r"qr_path")
+    return qr_path
 
-    return render_template('register.html', msg=msg)
+@app.route('/get_student_info/<student_id>')
+def get_student_info(student_id):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
+    student = cursor.fetchone()
+    cursor.close()
+
+    if not student:
+        return {'error': 'Student not found'}
+
+    return {
+        'name': student['name'],
+        'department': student['department'],
+        'bus_stop': student['bus_stop'],
+        'route_no': student['route_no'],
+        'fees_paid': bool(student['fees_paid'])
+    }
 
 
-# -------------------- BUS FINDER --------------------
+@app.route('/bus_id')
+def bus_id():
+    return render_template('bus_id.html')
+
+
+# ---------------- BUS ID ----------------
+def generate_bus_id(student_id):
+    img = qrcode.make(student_id)
+    img.save(f"static/qrcodes/{student_id}.png")
+
+
+# ---------------- BUS FINDER ----------------
 @app.route('/stop', methods=['GET', 'POST'])
 def buses_for_stop():
     # Get the selected stop from the request args (URL param)
@@ -245,6 +282,7 @@ def buses_for_stop():
 
     return render_template('buses_for_stop.html', buses=buses, stops=stops, stop_name=stop_name)
 
+
 # -------------------- DASHBOARD --------------------
 @app.route('/dashboard')
 def dashboard():
@@ -256,6 +294,7 @@ def dashboard():
 # -------------------- MAIN --------------------
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 # -------------------- Test Info --------------------
 # Sneha_Dadhich

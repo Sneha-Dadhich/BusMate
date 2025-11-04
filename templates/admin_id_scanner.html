@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bus ID Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f6fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h2 {
+      color: #2f3640;
+      margin-bottom: 20px;
+    }
+    #reader {
+      width: 320px;
+      margin-bottom: 20px;
+      border: 2px solid #2f3640;
+      border-radius: 10px;
+      background: white;
+      padding: 10px;
+    }
+    #result {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 320px;
+      text-align: left;
+      font-size: 16px;
+    }
+    #result h3 {
+      color: #273c75;
+      margin-top: 0;
+    }
+    .status {
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 10px;
+    }
+    .paid {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .unpaid {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎫 Scan Student Bus ID</h2>
+  <div id="reader"></div>
+  <div id="result">Scan a QR code to see details...</div>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      fetch(`/get_student_info/${decodedText}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById("result").innerHTML = `
+              <h3>❌ Student Not Found</h3>
+              <p>No record found for ID: ${decodedText}</p>
+            `;
+          } else {
+            document.getElementById("result").innerHTML = `
+              <h3>Student Details</h3>
+              <p><strong>Name:</strong> ${data.name}</p>
+              <p><strong>Department:</strong> ${data.department}</p>
+              <p><strong>Bus Stop:</strong> ${data.bus_stop}</p>
+              <p><strong>Route No:</strong> ${data.route_no}</p>
+              <p><strong>Fee Status:</strong> ${data.fees_paid ? '✅ Paid' : '❌ Not Paid'}</p>
+              <div class="status ${data.fees_paid ? 'paid' : 'unpaid'}">
+                ${data.fees_paid ? '✅ Eligible to Travel' : '❌ Not Eligible to Travel'}
+              </div>
+            `;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("result").innerHTML = `
+            <h3>⚠️ Error fetching student info</h3>
+            <p>Please try again.</p>
+          `;
+        });
+    }
+
+    new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 }).render(onScanSuccess);
+  </script>
+</body>
+</html>
