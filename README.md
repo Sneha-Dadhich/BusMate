@@ -34,7 +34,7 @@ project/
    ```bash
    git clone https://github.com/yourusername/busmate-flask.git
    cd busmate-flask
-````
+    ```
 
 2. Create a virtual environment:
 
