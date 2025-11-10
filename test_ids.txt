@@ -2,7 +2,7 @@ Student ID, Full Name, Select Department, Year of Enrollment, Bus Stop, College 
 
 JIET/DS/24/001, Ankit Sharma, CSE, 2024, Paota, ankit.24jdds001@jietjodhpur.ac.in, Ankit@JIET
 
-JIET/DS/25/001, Ankita Sharma, CSE, 2025, Ratanada, ankita.25jdcs001@jietjodhpur.ac.in, Ankita@JIET
+JIET/DS/25/001, Ankita Chaudhary, CSE, 2025, Ratanada, ankita.25jdcs001@jietjodhpur.ac.in, Ankita@JIET
 
 JIET/DS/26/030, Sneha Dadhich, CSE (Data Science), 2026, MIA, sneha.26jdds030@jietjodhpur.ac.in, Sneha@JIET
 
