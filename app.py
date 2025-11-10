@@ -135,6 +135,7 @@ def change_routes():
 
 
 # -------------------- LOGIN --------------------
+
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -147,12 +148,12 @@ def login():
             msg = 'Please fill out all fields.'
         else:
             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('SELECT * FROM student WHERE email = %s', (email,))
+            cursor.execute('SELECT * FROM Student WHERE email = %s', (email,))
             account = cursor.fetchone()
 
             if account and check_password_hash(account['password'], password):
                 session['loggedin'] = True
-                # session['id'] = account['id']
+                session['student_id'] = account['student_id']
                 session['username'] = account['name']
                 return redirect(url_for('buses_for_stop'))
             else:
@@ -191,10 +192,16 @@ def register():
                 msg = 'Account already exists!'
             else:
                 hashed_password = generate_password_hash(password)
+
+                # ✅ Generate default image path from student_id
+                clean_id = student_id.replace('/', '')   # Remove slashes
+
+                image_path = f"images/students_profile/{clean_id}.jpg"  # You can adjust folder or extension if needed
+
                 query = """INSERT INTO student 
-                           (student_id, name, department, year, bus_stop, email, password)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-                values = (student_id, name, department, year, bus_stop, email, hashed_password)
+                           (student_id, name, department, year, bus_stop, email, password, image_path)
+                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                values = (student_id, name, department, year, bus_stop, email, hashed_password, image_path)
 
                 cursor.execute(query, values)
                 mysql.connection.commit()
@@ -203,51 +210,54 @@ def register():
 
     return render_template('register.html', msg=msg, bus_stops=bus_stops)
 
+
 # -------------------- Student functions --------------------
 
-# Folder to store generated QR codes
-QR_FOLDER = 'static/qrcodes'
-os.makedirs(QR_FOLDER, exist_ok=True)
+# # Folder to store generated QR codes
+# QR_FOLDER = 'static/qrcodes'
+# os.makedirs(QR_FOLDER, exist_ok=True)
 
-def generate_qr(student_id):
-    """Generate and save QR code image for a student."""
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(student_id)
-    qr.make(fit=True)
+# def generate_qr(student_id):
+#     """Generate and save QR code image for a student."""
+#     qr = qrcode.QRCode(
+#         version=1,
+#         error_correction=qrcode.constants.ERROR_CORRECT_L,
+#         box_size=10,
+#         border=4,
+#     )
+#     qr.add_data(student_id)
+#     qr.make(fit=True)
 
-    img = qr.make_image(fill_color="black", back_color="white")
-    qr_path = os.path.join(QR_FOLDER, f"{student_id}.png")
-    img.save(r"qr_path")
-    return qr_path
+#     img = qr.make_image(fill_color="black", back_color="white")
+#     qr_path = os.path.join(QR_FOLDER, f"{student_id}.png")
+#     img.save(r"qr_path")
+#     return qr_path
 
-@app.route('/get_student_info/<student_id>')
-def get_student_info(student_id):
+@app.route('/bus_id', methods=['GET', 'POST'])
+def bus_id():
+    if 'loggedin' not in session or not session['loggedin']:
+        return redirect(url_for('login'))
+
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM Student WHERE student_id = %s", (student_id,))
-    student = cursor.fetchone()
+    cursor.execute('SELECT * FROM student WHERE student_id = %s', (session['student_id'],))
+    student_data = cursor.fetchone()
     cursor.close()
 
-    if not student:
-        return {'error': 'Student not found'}
+    if student_data:
+        # ✅ Extract only the part after 'static\' or 'static/'
+        path = student_data['image_path']
+        if 'static\\' in path:
+            student_data['image_path'] = path.split('static\\')[-1].replace('\\', '/')
+            print(f"student_data['image_path'] : {student_data['image_path']}")
+        elif 'static/' in path:
+            student_data['image_path'] = path.split('static/')[-1]
+        else:
+            # ✅ Corrected folder
+            print(f"student_data['image_path'] : {student_data['image_path']}")
+            student_data['image_path'] = f"images/students_profile/default.jpg"
 
-    return {
-        'name': student['name'],
-        'department': student['department'],
-        'bus_stop': student['bus_stop'],
-        'route_no': student['route_no'],
-        'fees_paid': bool(student['fees_paid'])
-    }
 
-
-@app.route('/bus_id')
-def bus_id():
-    return render_template('bus_id.html')
-
+    return render_template('bus_id.html', student=student_data)
 
 # ---------------- BUS ID ----------------
 def generate_bus_id(student_id):

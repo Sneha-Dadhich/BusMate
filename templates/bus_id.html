@@ -1,101 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Student Bus ID</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Bus ID</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f7f9fb;
+      background: linear-gradient(135deg, #c7d2fe, #e0f2fe);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
     }
 
-    .card {
-      background-color: white;
+    .id-card {
+      background: #ffffff;
       border-radius: 16px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 380px;
-      padding: 25px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      padding: 30px 40px;
+      max-width: 350px;
+      width: 100%;
       text-align: center;
+      transition: transform 0.2s ease-in-out;
     }
 
-    .card h2 {
-      color: #2f3640;
-      margin-bottom: 5px;
+    .id-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
     }
 
-    .card h3 {
-      color: #718093;
-      margin-top: 0;
-      font-weight: normal;
+    .student-photo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #3b82f6;
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+      margin: 0 auto 10px;
+    }
+
+    h2 {
+      color: #1e293b;
+      font-size: 1.4rem;
+      margin-bottom: 4px;
     }
 
     .info {
+      color: #475569;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 8px;
       text-align: left;
-      margin-top: 15px;
-      font-size: 15px;
-      color: #353b48;
-      line-height: 1.6;
     }
 
-    .qr-box {
-      background: #f1f2f6;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 20px auto;
-      display: inline-block;
+    .info p {
+      margin: 6px 0;
     }
 
     .status {
-      font-weight: bold;
-      font-size: 16px;
+      font-weight: 600;
       padding: 10px;
       border-radius: 10px;
+      margin-top: 15px;
+      font-size: 0.95rem;
+    }
+
+    .eligible {
+      background-color: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+
+    .not-eligible {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+
+    .msg {
+      color: #ef4444;
       margin-top: 10px;
+      font-weight: 500;
     }
 
-    .paid {
-      background-color: #d4edda;
-      color: #155724;
+    .footer-note {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #94a3b8;
     }
 
-    .unpaid {
-      background-color: #f8d7da;
-      color: #721c24;
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #1e293b;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+      transition: width 0.3s;
+      overflow-x: hidden;
     }
 
-    .note {
-      font-size: 14px;
-      color: #718093;
-      margin-top: 10px;
+    .sidebar.collapsed {
+      width: 70px;
+    }
+
+    .sidebar h2 {
+      margin: 0 0 20px;
+      font-size: 20px;
+      text-align: center;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed h2 {
+      opacity: 0;
+    }
+
+    .sidebar a {
+      color: #cbd5e1;
+      text-decoration: none;
+      padding: 12px 15px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .sidebar a span {
+      margin-left: 10px;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed a span {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sidebar a:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .sidebar.collapsed + .main-content {
+      margin-left: 70px;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>{{ student.name }}</h2>
-    <h3>{{ student.department }}</h3>
 
-    <div class="info">
-      <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-      <p><strong>Bus Stop:</strong> {{ student.bus_stop }}</p>
-      <p><strong>Route No:</strong> {{ student.route_no }}</p>
-    </div>
-
-    <div class="qr-box">
-      <img src="{{ url_for('static', filename='qrcodes/' + student.student_id + '.png') }}" width="200" alt="Bus QR Code">
-    </div>
-
-    <div class="status {{ 'paid' if student.fees_paid else 'unpaid' }}">
-      {{ '✅ Fee Paid - Eligible to Travel' if student.fees_paid else '❌ Fee Not Paid - Not Eligible' }}
-    </div>
-
-    <p class="note">Show this QR code to the bus conductor while boarding.</p>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    <h2>Hi</h2>
+    <a href="{{ url_for('buses_for_stop') }}">🚌 <span>My Bus</span></a>
+    <a href="{{ url_for('bus_id') }}">🚌 <span>Bus ID</span></a>
   </div>
+
+  <div class="id-card">
+    {% if student %}
+      <img src="{{ url_for('static', filename=student.image_path) }}" alt="Student Photo" class="student-photo" />
+      <h2>{{ student.name }}</h2>
+      <div class="info">
+        <p><strong>Year:</strong> {{ student.year }}</p>
+        <p><strong>Department:</strong> {{ student.department }}</p>
+        <p><strong>Email:</strong> {{ student.email }}</p>
+        <p><strong>Bus Stop:</strong> {{ student.bus_stop }}</p>
+      </div>
+      <div class="status {% if student.eligible == 1 %}eligible{% else %}not-eligible{% endif %}">
+        {% if student.eligible == 1 %}
+          ✅ Eligible for Transport
+        {% else %}
+          ❌ Not Eligible (Fee Pending)
+        {% endif %}
+      </div>
+      <p class="footer-note">JIET Jodhpur • Transport Department</p>
+    {% else %}
+      <p class="msg">{{ msg }}</p>
+    {% endif %}
+  </div>
+
+    <script>
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("mainContent").classList.toggle("collapsed");
+    }
+  </script>
+
 </body>
 </html>
