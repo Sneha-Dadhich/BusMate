@@ -246,6 +246,8 @@ def bus_id():
     if student_data:
         # ✅ Extract only the part after 'static\' or 'static/'
         path = student_data['image_path']
+        path = "static/" + student_data['image_path']
+        print(f"path : {path}")
         if 'static\\' in path:
             student_data['image_path'] = path.split('static\\')[-1].replace('\\', '/')
             print(f"student_data['image_path'] : {student_data['image_path']}")
@@ -253,7 +255,6 @@ def bus_id():
             student_data['image_path'] = path.split('static/')[-1]
         else:
             # ✅ Corrected folder
-            print(f"student_data['image_path'] : {student_data['image_path']}")
             student_data['image_path'] = f"images/students_profile/default.jpg"
 
 
