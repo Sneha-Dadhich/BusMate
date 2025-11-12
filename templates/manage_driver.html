@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel - Driver Management</title>
   <style>
     body {
@@ -104,59 +104,7 @@
       font-weight: 600;
     }
 
-    /* Form Section */
-    #formContainer {
-      text-align: center;
-      margin-bottom: 25px;
-      background: #ffffff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-      display: inline-block;
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: 500;
-      color: #374151;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 300px;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 14px;
-      background-color: #f9fafb;
-      transition: border-color 0.2s ease;
-    }
-
-    input:focus,
-    select:focus {
-      border-color: #16a34a;
-      outline: none;
-    }
-
-    button {
-      margin: 5px;
-      padding: 8px 16px;
-      background-color: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #1d4ed8;
-    }
-
     /* Table Styling */
-    /* Table Container for Responsiveness */
     .table-container {
       width: 100%;
       overflow-x: auto;
@@ -192,6 +140,16 @@
       color: white;
     }
 
+    button {
+      margin: 4px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
     .delete-btn {
       background-color: #ef4444;
     }
@@ -200,7 +158,22 @@
       background-color: #dc2626;
     }
 
-    /* Responsive Design */
+    .add-btn {
+      background-color: #2563eb;
+    }
+
+    .add-btn:hover {
+      background-color: #1d4ed8;
+    }
+
+    .save-btn {
+      background-color: #10b981;
+    }
+
+    .save-btn:hover {
+      background-color: #059669;
+    }
+
     @media (max-width: 768px) {
       .sidebar {
         position: fixed;
@@ -209,18 +182,12 @@
       }
 
       .main-content {
-        margin-left: 60px;
+        margin-left: 70px;
         padding: 15px;
       }
 
-      input,
-      textarea,
-      select {
-        width: 80%;
-      }
-
       table {
-        font-size: 12px;
+        font-size: 13px;
       }
     }
   </style>
@@ -232,7 +199,7 @@
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     <h2>Admin Panel</h2>
     <a href="{{ url_for('manage_bus') }}">🚌 <span>Manage Buses</span></a>
-    <a href="{{ url_for('manage_driver') }}">🙋🏻‍♂️ <span>Manage Driver</span></a>
+    <a href="{{ url_for('manage_driver') }}">🙋🏻‍♂️ <span>Manage Drivers</span></a>
     <a href="{{ url_for('manage_routes') }}">🛣 <span>Manage Routes</span></a>
     <a href="{{ url_for('logout') }}">🚪 <span>Logout</span></a>
   </div>
@@ -241,35 +208,111 @@
   <div class="main-content" id="mainContent">
     <h2>Driver Data Management</h2>
 
-    <table id="outputTable">
-      <thead>
-        <tr>
-          <th>Driver ID</th>
-          <th>Driver Name</th>
-          <th>Driver Phone Number</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for driver in drivers %}
-        <tr>
-          <td>{{ driver.driver_id }}</td>
-          <td>{{ driver.driver_name }}</td>
-          <td>{{ driver.phone_number }}</td>
-          <td>
-            <button class="action-btn" onclick="editData(this)">Edit</button>
-            <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div style="text-align: right; margin-bottom: 15px;">
+      <button class="add-btn" onclick="addNewRow()">➕ Add New Driver</button>
+    </div>
+
+    <div class="table-container">
+      <table id="outputTable">
+        <thead>
+          <tr>
+            <th>Driver ID</th>
+            <th>Driver Name</th>
+            <th>Phone Number</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for driver in drivers %}
+          <tr>
+            <td>{{ driver.driver_id }}</td>
+            <td>{{ driver.driver_name }}</td>
+            <td>{{ driver.phone_number }}</td>
+            <td>
+              <button class="delete-btn" onclick="deleteDriver(this)">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <script>
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("collapsed");
       document.getElementById("mainContent").classList.toggle("collapsed");
+    }
+
+    // ✅ DELETE FUNCTION (Connected to Flask backend)
+    function deleteDriver(button) {
+      const row = button.closest("tr");
+      const driverId = row.cells[0].textContent.trim();
+
+      if (confirm(`Are you sure you want to delete driver ID: ${driverId}?`)) {
+        fetch(`/delete_driver`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ driver_id: driverId })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              alert("Driver deleted successfully!");
+              row.remove();
+            } else {
+              alert("Failed to delete driver: " + (data.message || "Unknown error"));
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            alert("An error occurred while deleting.");
+          });
+      }
+    }
+
+    // ✅ ADD NEW DRIVER ROW
+    function addNewRow() {
+      const table = document.getElementById("outputTable").querySelector("tbody");
+      const newRow = table.insertRow();
+
+      newRow.innerHTML = `
+        <td>Auto</td>
+        <td contenteditable="true" style="background:#fef3c7;">Enter Name</td>
+        <td contenteditable="true" style="background:#fef3c7;">Enter Phone</td>
+        <td>
+          <button class="save-btn" onclick="saveNewDriver(this)">Save</button>
+          <button class="delete-btn" onclick="this.closest('tr').remove()">Delete</button>
+        </td>
+      `;
+    }
+
+    // ✅ SAVE NEW DRIVER TO DATABASE
+    function saveNewDriver(button) {
+      const row = button.closest("tr");
+      const name = row.cells[1].textContent.trim();
+      const phone = row.cells[2].textContent.trim();
+
+      if (!name || !phone) {
+        alert("Please enter both name and phone number.");
+        return;
+      }
+
+      fetch("/add_driver", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ driver_name: name, phone_number: phone })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            alert("Driver added successfully!");
+            location.reload();
+          } else {
+            alert("Failed to add driver: " + (data.message || "Unknown error"));
+          }
+        })
+        .catch(err => console.error("Error:", err));
     }
   </script>
 </body>

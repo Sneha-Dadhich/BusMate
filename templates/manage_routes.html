@@ -226,7 +226,6 @@
       <button id="addBtn" onclick="addNewRow()">➕ Add New Route</button>
     </div>
 
-
     <div id="formContainer">
       <label for="driverSelect">Bus ID</label>
       <select id="driverSelect" onchange="filterBus()">
@@ -271,58 +270,69 @@
   </div>
 
   <script>
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("collapsed");
-      document.getElementById("mainContent").classList.toggle("collapsed");
+
+  function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("collapsed");
+    document.getElementById("mainContent").classList.toggle("collapsed");
+  }
+
+  function filterBus() {
+    const busId = document.getElementById("driverSelect").value;
+    if (busId) {
+      window.location.href = `{{ url_for('manage_routes') }}?bus_id=${busId}`;
+    } else {
+      window.location.href = `{{ url_for('manage_routes') }}`;
     }
+  }
 
-    function filterBus() {
-      const busId = document.getElementById("driverSelect").value;
-      if (busId) {
-        window.location.href = `{{ url_for('manage_routes') }}?bus_id=${busId}`;
-      } else {
-        window.location.href = `{{ url_for('manage_routes') }}`;
-      }
+  // ✅ DELETE FUNCTION (Connected to Flask backend)
+  function deleteData(button) {
+    const row = button.closest("tr");
+    const busId = row.cells[0].textContent.trim();
+    const busStop = row.cells[1].textContent.trim();
+
+    if (confirm(`Are you sure you want to delete route for Bus ID: ${busId}, Stop: ${busStop}?`)) {
+      fetch(`/delete_route`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ bus_id: busId, bus_stop: busStop })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("✅ Record deleted successfully!");
+            row.remove(); // remove row visually
+          } else {
+            alert("❌ Failed to delete record: " + data.message);
+          }
+        })
+        .catch(error => {
+          console.error("Error deleting record:", error);
+          alert("An error occurred while deleting.");
+        });
     }
+  }
 
-    // Make Table Editable
-    function editRow(button) {
-      const row = button.closest("tr");
-      const cells = row.querySelectorAll("td:not(:last-child)");
+  // Add new editable row
+  function addNewRow() {
+    const table = document.getElementById("outputTable").getElementsByTagName("tbody")[0];
+    const newRow = table.insertRow();
 
-    function addNewRow() {
-      const table = document.getElementById("outputTable").getElementsByTagName("tbody")[0];
-      const newRow = table.insertRow();
-
-      newRow.innerHTML = `
-        <td contenteditable="true" style="background:#fef3c7;"></td>
-        <td contenteditable="true" style="background:#fef3c7;"></td>
-        <td contenteditable="true" style="background:#fef3c7;"></td>
-        <td contenteditable="true" style="background:#fef3c7;"></td>
-        <td contenteditable="true" style="background:#fef3c7;"></td>
-        <td>
-          <button onclick="saveNewRow(this)" style="background:#10b981;">Save</button>
-          <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-        </td>
-      `;
-      }
-
-
-      // Collect edited data
-      const data = Array.from(cells).map(td => td.textContent.trim());
-      console.log("Updated Row Data:", data);
-      // TODO: Send data via fetch() or AJAX POST to Flask route
-      }
-      
-
-    function deleteData(button) {
-      const row = button.closest("tr");
-      if (confirm("Are you sure you want to delete this record?")) {
-        row.remove();
-        // TODO: Send DELETE request to Flask backend
-      }
-    }
-  </script>
+    newRow.innerHTML = `
+      <td contenteditable="true" style="background:#fef3c7;"></td>
+      <td contenteditable="true" style="background:#fef3c7;"></td>
+      <td contenteditable="true" style="background:#fef3c7;"></td>
+      <td contenteditable="true" style="background:#fef3c7;"></td>
+      <td contenteditable="true" style="background:#fef3c7;"></td>
+      <td>
+        <button onclick="saveNewRow(this)" style="background:#10b981;">Save</button>
+        <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+      </td>
+    `;
+  }
+</script>
 </body>
 
 </html>

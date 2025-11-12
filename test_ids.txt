@@ -9,3 +9,4 @@ JIET/DS/26/030, Sneha Dadhich, CSE (Data Science), 2026, MIA, sneha.26jdds030@ji
 JIET/DS/24/011, Noorun Fatima Khan, CSE (Data Science), 2024, AIIMS, noorun.24jdds011@jietjodhpur.ac.in, Noorun@@JIET
 
 JIET/DS/26/001, Namita Kumar, EE, 2025, Paota, namita.25ee001@jietjodhpur.ac.in, Namita@JIET
+

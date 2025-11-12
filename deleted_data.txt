@@ -1,0 +1,8 @@
+deleted manage routes
+1, stadium, 8:30:00, 50, Yasin Mohammed 
+
+deleted driver
+1, Yasin Mohammed, 9001899052
+
+delete bus
+2, RJ14PB2103, KAMAL SINGH KHICHI 

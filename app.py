@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -72,6 +72,45 @@ def manage_bus():
     cursor.close()
     return render_template("manage_bus.html", buses=buses, drivers=drivers)
 
+# ------ manage bus functions ------- 
+@app.route('/add_bus', methods=['POST'])
+def add_bus():
+    data = request.get_json()
+    bus_number = data.get('bus_number')
+    driver_name = data.get('driver_name')
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO bus (bus_number, driver_name) VALUES (%s, %s)", (bus_number, driver_name))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        print("Error adding bus:", e)
+        return jsonify({'success': False, 'message': str(e)})
+
+
+@app.route('/delete_bus', methods=['POST'])
+def delete_bus():
+    data = request.get_json()
+    bus_id = data.get('bus_id')
+
+    try:
+        cursor = mysql.connection.cursor()
+
+        # ✅ Step 1: Delete routes using this bus
+        cursor.execute("DELETE FROM Bus_Route WHERE bus_id = %s", (bus_id,))
+
+        # ✅ Step 2: Delete the bus
+        cursor.execute("DELETE FROM Bus WHERE bus_id = %s", (bus_id,))
+
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print("Error deleting bus:", e)
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/admin/manage_driver')
 def manage_driver():
@@ -86,6 +125,46 @@ def manage_driver():
 
     cursor.close()
     return render_template("manage_driver.html", drivers=drivers)
+
+# ------ manage driver functions ------- 
+@app.route('/delete_driver', methods=['POST'])
+@app.route('/delete_driver', methods=['POST'])
+def delete_driver():
+    data = request.get_json()
+    driver_id = data.get('driver_id')
+
+    try:
+        cursor = mysql.connection.cursor()
+
+        # ✅ First, delete routes using that driver
+        cursor.execute("DELETE FROM Bus_Route WHERE driver_id = %s", (driver_id,))
+        
+        # ✅ Then, delete the driver
+        cursor.execute("DELETE FROM Driver WHERE driver_id = %s", (driver_id,))
+        
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+
+    except Exception as e:
+        print("Error deleting driver:", e)
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/add_driver', methods=['POST'])
+def add_driver():
+    data = request.get_json()
+    name = data.get('driver_name')
+    phone = data.get('phone_number')
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO driver (driver_name, phone_number) VALUES (%s, %s)", (name, phone))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        print("Error adding driver:", e)
+        return jsonify({'success': False, 'message': str(e)})
+
 
 @app.route('/admin/mange_routes')
 def manage_routes():
@@ -126,12 +205,28 @@ def manage_routes():
         selected_bus_id=bus_id  # to keep dropdown selected
     )
 
-
 @app.route('/admin/change_routes')
 def change_routes():
     if not session.get('admin_logged_in'):
         return redirect(url_for('admin_login'))
     return render_template('admin.change_routes.html')
+
+# ------ manage routes functions ------- 
+@app.route('/delete_route', methods=['POST'])
+def delete_route():
+    data = request.get_json()
+    bus_id = data.get('bus_id')
+    bus_stop = data.get('bus_stop')
+    print(f"Bus Stop : {bus_stop} \n bus id : {bus_id}")
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("DELETE FROM bus_route WHERE bus_id = %s AND bus_stop = %s", (bus_id, bus_stop))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        print("Error deleting record:", e)
+        return jsonify({'success': False, 'message': str(e)})
 
 
 # -------------------- LOGIN --------------------
