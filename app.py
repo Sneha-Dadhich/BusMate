@@ -305,6 +305,39 @@ def register():
 
     return render_template('register.html', msg=msg, bus_stops=bus_stops)
 
+# -------------------- bus tracking system --------------------
+@app.route('/track_bus')
+def index():
+    return render_template('track_bus.html')
+
+@app.route('/get_buses', methods=['GET'])
+def get_buses():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT bus_id FROM bus")
+    buses = cursor.fetchall()
+    cursor.close()
+    return jsonify([bus[0] for bus in buses])
+
+# Route to track a specific bus
+@app.route('/current_location', methods=['POST'])
+def track_bus():
+    data = request.get_json()
+    bus_id = data.get('bus_id')
+
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT current_location FROM bus WHERE bus_id = %s", (bus_id,))
+    result = cursor.fetchone()
+    cursor.close()
+
+    if result:
+        return jsonify({
+            "bus_id": bus_id,
+            "lat": result[0],
+            "lng": result[1]
+        })
+    else:
+        return jsonify({"error": "Bus not found"}), 404
+    
 
 # -------------------- Student functions --------------------
 
