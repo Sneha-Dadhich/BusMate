@@ -1,0 +1,7 @@
+1. once the bus/driver is deleted, it doesn't get deleted in the bus_route table fix that
+2. make the bus route like rail yatri as its interface is simpler for bus tracking system feature
+
+# future scopes
+1. add the qr code to the bus_id features
+2. The route management system is too complex to make the route from scratch so make a pdf reader which can automatically make the route
+3. make the live map for the bus tracking system

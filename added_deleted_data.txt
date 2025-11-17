@@ -1,0 +1,20 @@
+deleted manage routes
+1, stadium, 8:30:00, 50, Yasin Mohammed 
+
+deleted driver
+1, Yasin Mohammed, 9001899052
+
+delete bus
+2, RJ14PB2103, KAMAL SINGH KHICHI 
+
+added data of route
+21, NEW STATION1, 8:41:00, 50, SUBHAS BISHNOI
+
+added driver
+22, NEW DRIVER1, 1234567891
+23, NEW DRIVER2, 1234567892
+
+added bus
+RJ14PC5222, NEW DRIVER2 #should add as the driver is registered in the database
+
+

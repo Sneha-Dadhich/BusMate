@@ -271,6 +271,59 @@
 
   <script>
 
+  function saveNewRow(button) {
+  const row = button.closest("tr");
+  const cells = row.cells;
+
+  const busId = cells[0].textContent.trim();
+  const busStop = cells[1].textContent.trim();
+  const arrivingTime = cells[2].textContent.trim();
+  const capacity = cells[3].textContent.trim();
+  const driverName = cells[4].textContent.trim();
+
+  if (!busId || !busStop) {
+    alert("❌ Bus ID and Bus Stop are required!");
+    return;
+  }
+
+  fetch("/add_route", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      bus_id: busId,
+      bus_stop: busStop,
+      arriving_time: arrivingTime,
+      capacity: capacity,
+      driver_name: driverName
+    })
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ Route added successfully!");
+
+        // Remove yellow background
+        for (let i = 0; i < 5; i++) {
+          cells[i].style.background = "white";
+          cells[i].contentEditable = false;
+        }
+
+        // Replace Save button with Delete button only
+        cells[5].innerHTML = `
+            <button class="delete-btn" onclick="deleteData(this)">Delete</button>
+        `;
+      } else {
+        alert("❌ Failed: " + data.message);
+      }
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      alert("An error occurred while saving.");
+    });
+}
+
   function toggleSidebar() {
     document.getElementById("sidebar").classList.toggle("collapsed");
     document.getElementById("mainContent").classList.toggle("collapsed");

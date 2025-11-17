@@ -10,3 +10,5 @@ JIET/DS/24/011, Noorun Fatima Khan, CSE (Data Science), 2024, AIIMS, noorun.24jd
 
 JIET/DS/26/001, Namita Kumar, EE, 2025, Paota, namita.25ee001@jietjodhpur.ac.in, Namita@JIET
 
+@app.route('/get_buses', methods=['GET'])
+@app.route('/current_location', methods=['POST'])

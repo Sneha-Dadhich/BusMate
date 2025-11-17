@@ -73,21 +73,42 @@ def manage_bus():
     return render_template("manage_bus.html", buses=buses, drivers=drivers)
 
 # ------ manage bus functions ------- 
-@app.route('/add_bus', methods=['POST'])
+
+@app.route("/get_drivers", methods=["GET"])
+def get_drivers():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT driver_name FROM driver")
+    drivers = cursor.fetchall()
+    cursor.close()
+
+    driver_list = [d[0] for d in drivers]
+    return jsonify({"drivers": driver_list})
+
+@app.route("/add_bus", methods=["POST"])
 def add_bus():
     data = request.get_json()
-    bus_number = data.get('bus_number')
-    driver_name = data.get('driver_name')
+    bus_number = data.get("bus_number")
+    driver_name = data.get("driver_name")
+
+    if not bus_number or not driver_name:
+        return jsonify({"success": False, "message": "Missing fields"}), 400
 
     try:
         cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO bus (bus_number, driver_name) VALUES (%s, %s)", (bus_number, driver_name))
+
+        # Insert into bus table
+        query = """
+            INSERT INTO bus (bus_number, driver_name)
+            VALUES (%s, %s)
+        """
+        cursor.execute(query, (bus_number, driver_name))
         mysql.connection.commit()
-        cursor.close()
-        return jsonify({'success': True})
+
+        return jsonify({"success": True, "message": "Bus added successfully"}), 200
+
     except Exception as e:
         print("Error adding bus:", e)
-        return jsonify({'success': False, 'message': str(e)})
+        return jsonify({"success": False, "message": str(e)}), 500
 
 
 @app.route('/delete_bus', methods=['POST'])
@@ -127,7 +148,36 @@ def manage_driver():
     return render_template("manage_driver.html", drivers=drivers)
 
 # ------ manage driver functions ------- 
-@app.route('/delete_driver', methods=['POST'])
+
+@app.route('/add_driver', methods=['POST', 'GET'])
+def add_driver():
+    data = request.get_json()
+
+    driver_name = data.get("driver_name")
+    phone_number = data.get("phone_number")
+
+    # Validate
+    if not driver_name or not phone_number:
+        return jsonify({"success": False, "message": "Driver name and phone number are required"}), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+
+        query = """
+            INSERT INTO Driver (driver_name, phone_number)
+            VALUES (%s, %s)
+        """
+        cursor.execute(query, (driver_name, phone_number))
+
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({"success": True, "message": "Driver added successfully!"})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+
 @app.route('/delete_driver', methods=['POST'])
 def delete_driver():
     data = request.get_json()
@@ -148,21 +198,6 @@ def delete_driver():
 
     except Exception as e:
         print("Error deleting driver:", e)
-        return jsonify({'success': False, 'message': str(e)})
-
-@app.route('/add_driver', methods=['POST'])
-def add_driver():
-    data = request.get_json()
-    name = data.get('driver_name')
-    phone = data.get('phone_number')
-    try:
-        cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO driver (driver_name, phone_number) VALUES (%s, %s)", (name, phone))
-        mysql.connection.commit()
-        cursor.close()
-        return jsonify({'success': True})
-    except Exception as e:
-        print("Error adding driver:", e)
         return jsonify({'success': False, 'message': str(e)})
 
 
@@ -212,6 +247,35 @@ def change_routes():
     return render_template('admin.change_routes.html')
 
 # ------ manage routes functions ------- 
+
+@app.route('/add_route', methods=['POST'])
+def add_route():
+    data = request.get_json()
+
+    bus_id = data.get("bus_id")
+    bus_stop = data.get("bus_stop")
+    arriving_time = data.get("arriving_time")
+    route_date = data.get("route_date")  # New field needed
+    driver_id = data.get("driver_id")
+
+    if not bus_id or not bus_stop:
+        return jsonify({"success": False, "message": "Bus ID and Bus Stop are required"}), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+        query = """
+            INSERT INTO Bus_Route (bus_id, bus_stop, arriving_time, route_date, driver_id)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (bus_id, bus_stop, arriving_time, route_date, driver_id))
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({"success": True, "message": "Route added successfully!"})
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 @app.route('/delete_route', methods=['POST'])
 def delete_route():
     data = request.get_json()
@@ -227,7 +291,6 @@ def delete_route():
     except Exception as e:
         print("Error deleting record:", e)
         return jsonify({'success': False, 'message': str(e)})
-
 
 # -------------------- LOGIN --------------------
 
@@ -307,36 +370,35 @@ def register():
 
 # -------------------- bus tracking system --------------------
 @app.route('/track_bus')
-def index():
+def track_bus_page():
     return render_template('track_bus.html')
 
-@app.route('/get_buses', methods=['GET'])
+# used for the 'bus ID' feature and 'Track My Bus'
+@app.route('/get_buses')
 def get_buses():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT bus_id FROM bus")
-    buses = cursor.fetchall()
+    result = cursor.fetchall()
+    bus_ids = [row[0] for row in result]
     cursor.close()
-    return jsonify([bus[0] for bus in buses])
+    return jsonify({"bus_ids": bus_ids})
+
 
 # Route to track a specific bus
-@app.route('/current_location', methods=['POST'])
-def track_bus():
-    data = request.get_json()
-    bus_id = data.get('bus_id')
-
+# used for the 'Bus ID' feature and 'Track My bus' feature
+@app.route('/current_location/<int:bus_id>', methods=['GET'])
+def get_bus_stops(bus_id):
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT current_location FROM bus WHERE bus_id = %s", (bus_id,))
-    result = cursor.fetchone()
+
+    cursor.execute("SELECT bus_stop, arriving_time FROM bus_route WHERE bus_id = %s ORDER BY bus_stop", (bus_id,))
+    result = cursor.fetchall()
+
+    stops = [row[0] for row in result]
+
     cursor.close()
 
-    if result:
-        return jsonify({
-            "bus_id": bus_id,
-            "lat": result[0],
-            "lng": result[1]
-        })
-    else:
-        return jsonify({"error": "Bus not found"}), 404
+    return jsonify({"bus_id": bus_id, "stops": stops})
+
     
 
 # -------------------- Student functions --------------------

@@ -1,16 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BusMate - Track Your Bus</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bus Route Viewer</title>
+
   <style>
     body {
-      font-family: "Inter", sans-serif;
-      background-color: #eef2f3;
       margin: 0;
-      display: flex;
+      padding: 40px;
+      background: #f1f5f9;
+      font-family: "Inter", sans-serif;
+    }
+
+    .container {
+      width: 500px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1e293b;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+
+    .stop-box {
+      background: #e2e8f0;
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 6px;
+      color: #1e293b;
     }
 
     /* Sidebar */
@@ -28,23 +61,21 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.2);
       transition: width 0.3s;
       overflow-x: hidden;
-      z-index: 1000;
     }
 
-    .toggle-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 24px;
-      cursor: pointer;
-      margin-bottom: 15px;
-      align-self: flex-end;
+    .sidebar.collapsed {
+      width: 70px;
     }
 
     .sidebar h2 {
       margin: 0 0 20px;
       font-size: 20px;
       text-align: center;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed h2 {
+      opacity: 0;
     }
 
     .sidebar a {
@@ -56,10 +87,17 @@
       align-items: center;
       margin-bottom: 10px;
       transition: all 0.3s;
+      white-space: nowrap;
     }
 
     .sidebar a span {
       margin-left: 10px;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed a span {
+      opacity: 0;
+      pointer-events: none;
     }
 
     .sidebar a:hover {
@@ -67,151 +105,91 @@
       color: #fff;
     }
 
-    /* Main Content */
-    .main-content {
-      margin-left: 220px; /* equal to sidebar width */
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      height: 100vh;
-      overflow-y: auto;
-    }
-
-    h1 {
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-
-    .controls {
-      background: white;
-      padding: 15px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-      margin-bottom: 15px;
-    }
-
-    select, button {
-      margin: 8px;
-      padding: 10px;
-      font-size: 15px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    #map {
-      height: 500px;
-      width: 90%;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 1;
+    .sidebar.collapsed + .main-content {
+      margin-left: 70px;
     }
   </style>
 </head>
+
 <body>
 
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-    <h2>BusMate</h2>
+    <h2>Hi</h2>
     <a href="{{ url_for('buses_for_stop') }}">🚌 <span>My Bus</span></a>
     <a href="{{ url_for('bus_id') }}">🚌 <span>Bus ID</span></a>
-    <a href="{{ url_for('track_bus') }}">🗺️ <span>Track My Bus</span></a>
+    <a href="{{ url_for('track_bus_page') }}">🚌 <span>Track My Bus</span></a>
   </div>
 
-  <!-- Main content -->
-  <div class="main-content">
-    <h1>🚍 BusMate - Track Your Bus</h1>
+  <div class="container">
+    <h2>Select Bus to View Stops</h2>
 
-    <div class="controls">
-      <select id="busSelect">
-        <option value="">Select Bus ID</option>
-      </select>
-      <button onclick="trackBus()">Track Bus</button>
-    </div>
+    <!-- Dropdown -->
+    <select id="busDropdown" onchange="loadStops()">
+      <option value="">Select Bus ID</option>
+    </select>
 
-    <div id="map"></div>
+    <!-- Stops list -->
+    <div id="stopsContainer"></div>
   </div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    // Sidebar toggle
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const mainContent = document.querySelector('.main-content');
-      sidebar.classList.toggle('collapsed');
-      if (sidebar.classList.contains('collapsed')) {
-        sidebar.style.width = '70px';
-        mainContent.style.marginLeft = '70px';
-      } else {
-        sidebar.style.width = '220px';
-        mainContent.style.marginLeft = '220px';
-      }
-      setTimeout(() => {
-        map.invalidateSize(); // fix Leaflet map size after layout shift
-      }, 300);
+    // Load Bus IDs into dropdown
+    function loadBusIds() {
+      fetch("/get_buses")
+        .then(res => res.json())
+        .then(data => {
+          const dropdown = document.getElementById("busDropdown");
+          dropdown.innerHTML = "<option value=''>Select Bus ID</option>";
+
+          data.bus_ids.forEach(id => {
+            let opt = document.createElement("option");
+            opt.value = id;
+            opt.textContent = id;
+            dropdown.appendChild(opt);
+          });
+        });
     }
 
-    // Initialize map
-    let map = L.map('map').setView([26.2974, 73.0273], 13); // Jodhpur (JIET)
-    let busMarker = null;
+    // Load stops for selected bus
+    function loadStops() {
+      const busId = document.getElementById("busDropdown").value;
+      const container = document.getElementById("stopsContainer");
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Load bus list
-    async function loadBuses() {
-      const response = await fetch('/get_buses');
-      const buses = await response.json();
-      const select = document.getElementById('busSelect');
-      buses.forEach(bus_id => {
-        const option = document.createElement('option');
-        option.value = bus_id;
-        option.textContent = "Bus " + bus_id;
-        select.appendChild(option);
-      });
-    }
-
-    // Track selected bus
-    async function trackBus() {
-      const bus_id = document.getElementById('busSelect').value;
-      if (!bus_id) return alert('Please select a bus');
-
-      const response = await fetch('/track_bus', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({bus_id})
-      });
-      const data = await response.json();
-
-      if (data.error) {
-        alert(data.error);
+      if (!busId) {
+        container.innerHTML = "";
         return;
       }
 
-      if (busMarker) map.removeLayer(busMarker);
+      fetch(`/current_location/${busId}`)
+        .then(res => res.json())
+        .then(data => {
+          container.innerHTML = "";
 
-      busMarker = L.marker([data.lat, data.lng]).addTo(map);
-      busMarker.bindPopup(`<b>Bus ${data.bus_id}</b><br>Lat: ${data.lat}<br>Lng: ${data.lng}`).openPopup();
+          if (data.stops.length === 0) {
+            container.innerHTML = "<p>No stops found for this bus.</p>";
+            return;
+          }
 
-      map.setView([data.lat, data.lng], 14);
+          data.stops.forEach(stop => {
+            const div = document.createElement("div");
+            div.className = "stop-box";
+            div.textContent = stop;
+            container.appendChild(div);
+          });
+        });
     }
 
-    window.onload = loadBuses;
+    // Load bus IDs on page load
+    window.onload = loadBusIds;
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("mainContent").classList.toggle("collapsed");
+    }
+    
   </script>
+
 </body>
 </html>

@@ -19,6 +19,7 @@ CREATE TABLE Driver (
     driver_name VARCHAR(50),
     phone_number VARCHAR(15)
 );
+
 -- Step 3: Create Bus_Route table with foreign keys
 CREATE TABLE Bus_Route (
     route_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -30,6 +31,7 @@ CREATE TABLE Bus_Route (
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id),
     FOREIGN KEY (driver_id) REFERENCES Driver(driver_id)
 );
+
 -- Step 3: Create Registration for the Student 
 CREATE TABLE Student (
     student_id VARCHAR(20) PRIMARY KEY UNIQUE,
@@ -37,26 +39,21 @@ CREATE TABLE Student (
     department VARCHAR(50) NOT NULL,
     year VARCHAR(10) NOT NULL,
     bus_stop VARCHAR(100) NOT NULL,
-    route_no VARCHAR(20) NOT NULL,
     fees_paid BOOLEAN DEFAULT FALSE,
     qr_code_path VARCHAR(255),
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    CHECK (email LIKE '%.22jdds%jietjodhpur.ac.in')
+    CHECK (email LIKE '%.%jietjodhpur.ac.in'),
+    image_path VARCHAR(255)
 );
+SELECT name, email, password FROM Student;
+SELECT image_path FROM Student;
 
+-- Last minute change : Added the image path for the bus_id feature
+ALTER TABLE student ADD COLUMN image_path VARCHAR(255);
+SELECT image_path FROM student;
+SELECT * FROM student;
 
--- Step 4 : Create a table for student eligible for the college transport or not
-CREATE TABLE students (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id TEXT UNIQUE,
-    name TEXT,
-    department TEXT,
-    year INTEGER,
-    bus_stop TEXT,
-    route_no TEXT,
-    fees_paid BOOLEAN
-);
 
 -- Insert data into Bus
 INSERT INTO Bus (bus_id, bus_number, capacity) VALUES 

@@ -4,14 +4,136 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - Bus Data Management</title>
+  <title>Admin Panel - Bus Management</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+    }
+
+    .container {
+      width: 90%;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table th,
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #1e293b;
+      color: white;
+    }
+
+    .add-btn {
+      background-color: #2563eb;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      margin-bottom: 15px;
+      float: right;
+    }
+
+    .delete-btn {
+      background-color: #ef4444;
+      color: white;
+      padding: 7px 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* MODAL POPUP */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      width: 350px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content h3 {
+      text-align: center;
+      color: #1e293b;
+    }
+
+    .modal-content label {
+      font-size: 14px;
+      color: #1e293b;
+    }
+
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      padding: 8px;
+      margin: 6px 0 12px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .modal-buttons {
       display: flex;
-      height: 100vh;
-      background: #f4f6f9;
+      justify-content: space-between;
+    }
+
+    .save-btn {
+      background-color: #16a34a;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     /* Sidebar */
@@ -68,125 +190,11 @@
       display: none;
     }
 
-    /* Toggle Button */
-    .toggle-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      margin-bottom: 20px;
-      align-self: flex-end;
-    }
-
-    /* Main Content */
-    .main-content {
-      margin-left: 220px;
-      padding: 30px;
-      flex: 1;
-      transition: margin-left 0.3s ease;
-    }
-
-    .main-content.collapsed {
-      margin-left: 60px;
-    }
-
-    .main-content h2 {
-      font-size: 26px;
-      color: #1e293b;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    button {
-      margin: 5px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 5px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .add-btn {
-      background-color: #2563eb;
-    }
-
-    .add-btn:hover {
-      background-color: #1d4ed8;
-    }
-
-    .save-btn {
-      background-color: #10b981;
-    }
-
-    .save-btn:hover {
-      background-color: #059669;
-    }
-
-    .delete-btn {
-      background-color: #ef4444;
-    }
-
-    .delete-btn:hover {
-      background-color: #dc2626;
-    }
-
-    /* Table */
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 700px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-    }
-
-    th {
-      background-color: #04AA6D;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tr:hover {
-      background-color: #f1f5f9;
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        height: 100%;
-        z-index: 100;
-      }
-
-      .main-content {
-        margin-left: 70px;
-        padding: 15px;
-      }
-
-      table {
-        font-size: 13px;
-      }
-    }
   </style>
 </head>
 
 <body>
+
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
@@ -197,98 +205,93 @@
     <a href="{{ url_for('logout') }}">🚪 <span>Logout</span></a>
   </div>
 
-  <!-- Main Content -->
-  <div class="main-content" id="mainContent">
-    <h2>Bus Data Management</h2>
+  <div class="container">
+    <h2>Bus Management</h2>
 
-    <div style="text-align: right; margin-bottom: 15px;">
-      <button class="add-btn" onclick="addNewRow()">➕ Add New Bus</button>
-    </div>
+    <button class="add-btn" onclick="addNewRow()">+ Add Bus</button>
 
-    <div class="table-container">
-      <table id="outputTable">
-        <thead>
-          <tr>
-            <th>Bus ID</th>
-            <th>Bus Number</th>
-            <th>Driver Name</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for bus in buses %}
-          <tr>
-            <td>{{ bus.bus_id }}</td>
-            <td>{{ bus.bus_number }}</td>
-            <td>{{ bus.driver_name }}</td>
-            <td>
-              <button class="delete-btn" onclick="deleteBus(this)">Delete</button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <table id="busTable">
+      <thead>
+        <tr>
+          <th>Bus Number</th>
+          <th>Driver Name</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in buses %}
+        <tr>
+          <td>{{ row.bus_number }}</td>
+          <td>{{ row.driver_name }}</td>
+          <td>
+            <button class="delete-btn" onclick="deleteBus('{{ row.bus_id }}')">Delete</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ADD BUS POPUP -->
+  <div id="addBusModal" class="modal">
+    <div class="modal-content">
+      <h3>Add New Bus</h3>
+
+      <label>Bus Number:</label>
+      <input type="text" id="busNumberInput" placeholder="Enter Bus Number">
+
+      <label>Driver Name:</label>
+      <select id="driverDropdown">
+        <option value="">Select Driver</option>
+      </select>
+
+      <div class="modal-buttons">
+        <button class="save-btn" onclick="submitNewBus()">Save</button>
+        <button class="delete-btn" onclick="closeModal()">Cancel</button>
+      </div>
     </div>
   </div>
 
   <script>
-    // Toggle sidebar
+    // Open popup
+    function addNewRow() {
+      document.getElementById("addBusModal").style.display = "flex";
+      loadDrivers();
+    }
+
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("collapsed");
       document.getElementById("mainContent").classList.toggle("collapsed");
     }
 
-    // ✅ DELETE FUNCTION
-    function deleteBus(button) {
-      const row = button.closest("tr");
-      const busId = row.cells[0].textContent.trim();
+    function closeModal() {
+      document.getElementById("addBusModal").style.display = "none";
+    }
 
-      if (confirm(`Are you sure you want to delete Bus ID: ${busId}?`)) {
-        fetch(`/delete_bus`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bus_id: busId })
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              alert("✅ Bus deleted successfully!");
-              row.remove();
-            } else {
-              alert("❌ Failed to delete bus: " + (data.message || "Unknown error"));
-            }
-          })
-          .catch(err => {
-            console.error("Error:", err);
-            alert("An error occurred while deleting.");
+    // Load drivers dynamically from SQL
+    function loadDrivers() {
+      fetch("/get_drivers")
+        .then(res => res.json())
+        .then(data => {
+          const dropdown = document.getElementById("driverDropdown");
+          dropdown.innerHTML = '<option value="">Select Driver</option>';
+
+          data.drivers.forEach(driver => {
+            let option = document.createElement("option");
+            option.value = driver;
+            option.textContent = driver;
+            dropdown.appendChild(option);
           });
-      }
+        });
     }
 
-    // ✅ ADD NEW BUS ROW
-    function addNewRow() {
-      const table = document.querySelector("#outputTable tbody");
-      const newRow = table.insertRow();
-
-      newRow.innerHTML = `
-        <td>Auto</td>
-        <td contenteditable="true" style="background:#fef3c7;">Enter Bus Number</td>
-        <td contenteditable="true" style="background:#fef3c7;">Enter Driver Name</td>
-        <td>
-          <button class="save-btn" onclick="saveNewBus(this)">Save</button>
-          <button class="delete-btn" onclick="this.closest('tr').remove()">Cancel</button>
-        </td>
-      `;
-    }
-
-    // ✅ SAVE NEW BUS (POST to backend)
-    function saveNewBus(button) {
-      const row = button.closest("tr");
-      const busNumber = row.cells[1].textContent.trim();
-      const driverName = row.cells[2].textContent.trim();
+    // Submit new bus
+    function submitNewBus() {
+      const busNumber = document.getElementById("busNumberInput").value.trim();
+      const driverName = document.getElementById("driverDropdown").value.trim();
 
       if (!busNumber || !driverName) {
-        alert("⚠️ Please fill in all fields.");
+        alert("⚠️ Please fill all fields.");
         return;
       }
 
@@ -303,11 +306,28 @@
             alert("✅ Bus added successfully!");
             location.reload();
           } else {
-            alert("❌ Failed to add bus: " + (data.message || "Unknown error"));
+            alert("❌ Error: " + data.message);
           }
-        })
-        .catch(err => console.error("Error:", err));
+        });
+    }
+
+    // Delete bus
+    function deleteBus(id) {
+      if (!confirm("Are you sure?")) return;
+
+      fetch("/delete_bus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bus_id: id })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) location.reload();
+          else alert("Error deleting bus");
+        });
     }
   </script>
+
 </body>
+
 </html>
