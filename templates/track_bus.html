@@ -1,114 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bus Route Viewer</title>
-
-  <style>
-    body {
-      margin: 0;
-      padding: 40px;
-      background: #f1f5f9;
-      font-family: "Inter", sans-serif;
-    }
-
-    .container {
-      width: 500px;
-      margin: auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #1e293b;
-    }
-
-    select {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      margin-bottom: 20px;
-      background: #fff;
-    }
-
-    .stop-box {
-      background: #e2e8f0;
-      padding: 10px 14px;
-      margin: 8px 0;
-      border-radius: 6px;
-      color: #1e293b;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #1e293b;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-      transition: width 0.3s;
-      overflow-x: hidden;
-    }
-
-    .sidebar.collapsed {
-      width: 70px;
-    }
-
-    .sidebar h2 {
-      margin: 0 0 20px;
-      font-size: 20px;
-      text-align: center;
-      transition: opacity 0.3s;
-    }
-
-    .sidebar.collapsed h2 {
-      opacity: 0;
-    }
-
-    .sidebar a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 12px 15px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-
-    .sidebar a span {
-      margin-left: 10px;
-      transition: opacity 0.3s;
-    }
-
-    .sidebar.collapsed a span {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .sidebar a:hover {
-      background: #334155;
-      color: #fff;
-    }
-
-    .sidebar.collapsed + .main-content {
-      margin-left: 70px;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">
 </head>
 
 <body>
@@ -116,33 +12,60 @@
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
     <h2>Hi</h2>
     <a href="{{ url_for('buses_for_stop') }}">🚌 <span>My Bus</span></a>
     <a href="{{ url_for('bus_id') }}">🚌 <span>Bus ID</span></a>
     <a href="{{ url_for('track_bus_page') }}">🚌 <span>Track My Bus</span></a>
   </div>
 
-  <div class="container">
-    <h2>Select Bus to View Stops</h2>
+  <!-- Main Content -->
+  <div class="main-content" id="mainContent">
+    <div class="title-row">
+      <img src="{{ url_for('static', filename='images/jiet_logo.jpg') }}" class="title-logo">
+      <h1>Bus Tracker</h1>
+    </div>
 
-    <!-- Dropdown -->
-    <select id="busDropdown" onchange="loadStops()">
-      <option value="">Select Bus ID</option>
-    </select>
+    <div class="container">
+        <h2>Select Bus to View Stops</h2>
 
-    <!-- Stops list -->
-    <div id="stopsContainer"></div>
+        <select id="busDropdown" onchange="loadStops()">
+          <option value="">Select Bus ID</option>
+        </select>
+
+        <div id="stopsContainer"></div>
+    </div>
+
   </div>
 
+
   <script>
-    // Load Bus IDs into dropdown
+
+
+    function sendLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                fetch("/update_location", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({
+                        bus_id: localStorage.getItem("bus_id"),
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    })
+                });
+            });
+        }
+    }
+
+    setInterval(sendLocation, 5000);
+
     function loadBusIds() {
       fetch("/get_buses")
         .then(res => res.json())
         .then(data => {
           const dropdown = document.getElementById("busDropdown");
           dropdown.innerHTML = "<option value=''>Select Bus ID</option>";
-
           data.bus_ids.forEach(id => {
             let opt = document.createElement("option");
             opt.value = id;
@@ -152,43 +75,70 @@
         });
     }
 
-    // Load stops for selected bus
     function loadStops() {
-      const busId = document.getElementById("busDropdown").value;
-      const container = document.getElementById("stopsContainer");
+        const busId = document.getElementById("busDropdown").value;
+        const container = document.getElementById("stopsContainer");
 
-      if (!busId) {
-        container.innerHTML = "";
-        return;
-      }
-
-      fetch(`/current_location/${busId}`)
-        .then(res => res.json())
-        .then(data => {
+        if (!busId) {
           container.innerHTML = "";
+          return;
+        }
 
-          if (data.stops.length === 0) {
-            container.innerHTML = "<p>No stops found for this bus.</p>";
-            return;
+        fetch(`/current_location/${busId}`)
+            .then(res => res.json())
+            .then(data => {
+              container.innerHTML = "";
+
+              if (data.stops.length === 0) {
+                container.innerHTML = "<p>No stops found for this bus.</p>";
+                return;
           }
 
           data.stops.forEach(stop => {
             const div = document.createElement("div");
             div.className = "stop-box";
-            div.textContent = stop;
+
+            div.innerHTML = `
+              <strong>${stop.stop_name}</strong><br>
+              <span>Arrival Time: ${stop.arrival_time}</span><br>
+              <span>Status: <b>${stop.status}</b></span>
+            `;
+
+
             container.appendChild(div);
           });
         });
-    }
+      }
 
-    // Load bus IDs on page load
     window.onload = loadBusIds;
 
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("collapsed");
       document.getElementById("mainContent").classList.toggle("collapsed");
     }
-    
+
+    function sendLocation() {
+        const busId = document.getElementById("busDropdown").value;
+
+        if (!busId) return;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(pos => {
+                fetch('/update_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        bus_id: busId,
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    })
+                });
+            });
+        }
+    }
+
+    // send location every 5 seconds
+    setInterval(sendLocation, 5000);
   </script>
 
 </body>

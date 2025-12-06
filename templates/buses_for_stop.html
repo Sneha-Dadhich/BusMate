@@ -5,189 +5,15 @@
   <title>Buses Assigned</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f4f7fa;
-      margin: 0;
-      padding: 0;
-      color: #333;
-      display: flex;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #1e293b;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-      transition: width 0.3s;
-      overflow-x: hidden;
-    }
-
-    .sidebar.collapsed {
-      width: 70px;
-    }
-
-    .sidebar h2 {
-      margin: 0 0 20px;
-      font-size: 20px;
-      text-align: center;
-      transition: opacity 0.3s;
-    }
-
-    .sidebar.collapsed h2 {
-      opacity: 0;
-    }
-
-    .sidebar a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 12px 15px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-
-    .sidebar a span {
-      margin-left: 10px;
-      transition: opacity 0.3s;
-    }
-
-    .sidebar.collapsed a span {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .sidebar a:hover {
-      background: #334155;
-      color: #fff;
-    }
-
-    .toggle-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 22px;
-      cursor: pointer;
-      align-self: flex-end;
-      margin-bottom: 20px;
-    }
-
-    /* Main Content */
-    .main-content {
-      margin-left: 220px;
-      flex-grow: 1;
-      padding: 40px;
-      transition: margin-left 0.3s;
-    }
-
-    .sidebar.collapsed + .main-content {
-      margin-left: 70px;
-    }
-
-    .container {
-      background: #ffffff;
-      padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    h2 {
-      text-align: center;
-      color: #1f4e79;
-      margin-bottom: 30px;
-    }
-
-    form {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    label {
-      margin-right: 10px;
-      font-weight: 600;
-    }
-
-    select {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-      min-width: 200px;
-    }
-
-    table {
-      border-collapse: collapse;
-      margin-top: 20px;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      width: 100%;
-    }
-
-    th, td {
-      padding: 14px;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
-
-    th {
-      background-color: #1f4e79;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    tr:hover {
-      background-color: #f1f5f9;
-    }
-
-    .no-data {
-      text-align: center;
-      padding: 20px;
-      font-style: italic;
-      color: #777;
-    }
-
-    .back-btn {
-      display: inline-block;
-      margin-top: 25px;
-      background-color: #1f4e79;
-      color: white;
-      padding: 10px 18px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: 500;
-      transition: background-color 0.3s ease;
-    }
-
-    .back-btn:hover {
-      background-color: #163c5d;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style3.css') }}">
 </head>
 <body>
 
+  
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
     <h2>Hi</h2>
     <a href="{{ url_for('buses_for_stop') }}">🚌 <span>My Bus</span></a>
     <a href="{{ url_for('bus_id') }}">🚌 <span>Bus ID</span></a>
@@ -196,6 +22,11 @@
 
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
+    <div class="title-row">
+      <img src="{{ url_for('static', filename='images/jiet_logo.jpg') }}" class="title-logo">
+      <h1>Bus For My Stop</h1>
+    </div>
+
     <div class="container">
       <h2>Select Bus Stop</h2>
       <form method="GET" action="{{ url_for('buses_for_stop') }}">

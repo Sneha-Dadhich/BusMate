@@ -1,0 +1,215 @@
+/* ===============================
+   FULL PAGE BACKGROUND
+=============================== */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: "Inter", sans-serif;
+    background: linear-gradient(135deg, #1e293b, #334155, #0f172a);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ---------------------------
+   Logo Placement (Top-Center)
+----------------------------*/
+
+.logo-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;   /* Center horizontally */
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+.jiet-logo {
+    width: 150px;      /* Adjust size as needed */
+    height: auto;
+    object-fit: contain;
+}
+
+/* ===============================
+   PAGE HEADINGS (Register / Success)
+=============================== */
+.formHeading {
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+
+    text-align: center;
+
+    letter-spacing: 1px;
+
+    /* Soft neon glow effect */
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.5),
+                 0 0 12px rgba(59, 130, 246, 0.6);
+}
+
+.msg {
+    background: linear-gradient(135deg, #00c853, #64dd17);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    width: fit-content;
+    margin: 20px auto;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.7px;
+
+    animation: slideDown 0.6s ease, fadeOut 1s ease 3s forwards;
+}
+
+/* Slide animation */
+@keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+/* Auto Fade-out after 3 seconds */
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ===============================
+   FORM CONTAINER
+=============================== */
+
+.container {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    width: 400px;
+    padding: 35px 30px;
+    border-radius: 14px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+.word {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+/* ===============================
+   INPUT FIELDS
+=============================== */
+.textbox {
+    width: 90%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 15px;
+    color: white;
+}
+
+.textbox::placeholder {
+    color: #d1d5db;
+}
+
+/* ===============================
+   BUTTON
+=============================== */
+.btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 17px;
+    background: #3b82f6;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background: #2563eb;
+}
+
+/* ===============================
+   BOTTOM LINKS
+=============================== */
+.bottom {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+.bottom a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+.bottom a:hover {
+    text-decoration: underline;
+}
+
+/* ===============================
+   RESPONSIVE
+=============================== */
+@media (max-width: 400px) {
+    .container {
+        width: 90%;
+        padding: 25px 20px;
+    }
+}
+
+/* ===============================
+   SELECT DROPDOWN (Matches Textbox Exactly)
+=============================== */
+
+select {
+    width: 95%;                     /* SAME as textbox */
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 15px;
+    opacity: 0.8;
+
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    box-sizing: border-box;        /* Ensures perfect sizing */
+
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* custom arrow */
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' width='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'><polygon points='5,7 10,12 15,7'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+/* ===============================
+   OPTION STYLING (Full Width)
+=============================== */
+
+option {
+    background: #1e293b;
+    color: #f1f5f9;
+    padding: 12px;
+    font-size: 15px;
+
+    min-width: 100%;               /* makes dropdown wide */
+    width: 100%;                   /* same as textbox */
+    box-sizing: border-box;
+}
+
+option:hover {
+    background: #334155;
+}

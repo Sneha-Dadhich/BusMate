@@ -1,0 +1,9 @@
+colour theme of digicampus
+digi campus red - #ea5652 
+digi campus white - 255,255,255 (maybe)
+jiet dark blue - #0093d9
+jiet light blue - #62ddff
+jiet yellow - #d2c600
+jiet grey - #7d7c7a
+jiet black - #363533
+jiet white - #e0e0df

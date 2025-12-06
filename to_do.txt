@@ -1,5 +1,6 @@
-1. once the bus/driver is deleted, it doesn't get deleted in the bus_route table fix that
-2. make the bus route like rail yatri as its interface is simpler for bus tracking system feature
+1. 
+2. once the bus/driver is deleted, it doesn't get deleted in the bus_route and student table fix that
+3. make the bus route like rail yatri as its interface is simpler for bus tracking system feature
 
 # future scopes
 1. add the qr code to the bus_id features

@@ -4,214 +4,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - User Management</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      display: flex;
-      height: 100vh;
-      background: #f4f6f9;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #1e293b;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-      transition: width 0.3s ease;
-      overflow: hidden;
-    }
-
-    .sidebar.collapsed {
-      width: 60px;
-    }
-
-    .sidebar h2 {
-      margin: 0 0 20px;
-      font-size: 20px;
-      text-align: center;
-      transition: opacity 0.3s ease;
-    }
-
-    .sidebar.collapsed h2 {
-      opacity: 0;
-      height: 0;
-    }
-
-    .sidebar a {
-      color: #cbd5e1;
-      text-decoration: none;
-      padding: 12px 15px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      transition: all 0.3s;
-      white-space: nowrap;
-    }
-
-    .sidebar a:hover {
-      background: #334155;
-      color: #fff;
-    }
-
-    .sidebar.collapsed a span {
-      display: none;
-    }
-
-    /* Toggle Button */
-    .toggle-btn {
-      background: none;
-      border: none;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
-      margin-bottom: 20px;
-      align-self: flex-end;
-    }
-
-    /* Main Content */
-    .main-content {
-      margin-left: 220px;
-      padding: 30px;
-      flex: 1;
-      transition: margin-left 0.3s ease;
-    }
-
-    .main-content.collapsed {
-      margin-left: 60px;
-    }
-
-    .main-content h2 {
-      font-size: 26px;
-      color: #1e293b;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    #formContainer {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    input,
-    textarea,
-    select {
-      width: 300px;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    button {
-      margin: 5px;
-      padding: 8px 16px;
-      background-color: #2563eb;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #1d4ed8;
-    }
-
-    /* Table Container for Responsiveness */
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 700px;
-    }
-
-    th,
-    td {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: left;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-
-    tr:hover {
-      background-color: #f1f5f9;
-    }
-
-    th {
-      background-color: #04AA6D;
-      color: white;
-    }
-
-    .delete-btn {
-      background-color: #ef4444;
-    }
-
-    .delete-btn:hover {
-      background-color: #dc2626;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        height: 100%;
-        z-index: 100;
-      }
-
-      .main-content {
-        margin-left: 60px;
-        padding: 15px;
-      }
-
-      input,
-      textarea,
-      select {
-        width: 80%;
-      }
-
-      table {
-        font-size: 12px;
-      }
-
-      th,
-      td {
-        padding: 6px;
-      }
-    }
-  </style>
+  <title>Admin Panel - Route Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
+
   <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+
     <h2>Admin Panel</h2>
+
     <a href="{{ url_for('manage_bus') }}">🚌 <span>Manage Buses</span></a>
     <a href="{{ url_for('manage_driver') }}">🙋🏻‍♂️ <span>Manage Driver</span></a>
     <a href="{{ url_for('manage_routes') }}">🛣 <span>Manage Routes</span></a>
@@ -220,15 +24,18 @@
 
   <!-- Main Content -->
   <div class="main-content" id="mainContent">
-    <h2>Route Data Management</h2>
+    <div class="title-row">
+      <img src="{{ url_for('static', filename='images/jiet_logo.jpg') }}" class="title-logo">
+      <h1>Route Management</h1>
+    </div>
 
-    <div style="text-align: right; margin-bottom: 15px;">
-      <button id="addBtn" onclick="addNewRow()">➕ Add New Route</button>
+    <div class="top-bar">
+      <button class="add-btn" onclick="openModal()">+ Add Route</button>
     </div>
 
     <div id="formContainer">
-      <label for="driverSelect">Bus ID</label>
-      <select id="driverSelect" onchange="filterBus()">
+      <label for="busFilter">Bus ID</label>
+      <select id="busFilter" onchange="filterBus()">
         <option value="">-- All Buses --</option>
         {% for bus in buses %}
         <option value="{{ bus.bus_id }}" {% if selected_bus_id == bus.bus_id|string %}selected{% endif %}>
@@ -250,6 +57,7 @@
             <th>Action</th>
           </tr>
         </thead>
+
         <tbody>
           {% for bus_route in bus_route_data %}
           <tr>
@@ -259,133 +67,188 @@
             <td>{{ bus_route.capacity }}</td>
             <td>{{ bus_route.driver_name }}</td>
             <td>
-              <!-- <button class="action-btn" onclick="editRow(this)">Edit</button> -->
               <button class="delete-btn" onclick="deleteData(this)">Delete</button>
             </td>
           </tr>
           {% endfor %}
         </tbody>
+
       </table>
     </div>
   </div>
 
+  <!-- ===================== MODAL POPUP ======================= -->
+  <div id="addRouteModal" class="modal">
+    <div class="modal-content">
+
+      <h2>Add Route</h2>
+
+      <label>Bus ID</label>
+      <select id="modalBusId">
+        {% for bus in buses %}
+        <option value="{{ bus.bus_id }}">{{ bus.bus_id }}</option>
+        {% endfor %}
+      </select>
+
+    <label>Bus Stop</label>
+      <select id="modalBusStop">
+        {% for stop in bus_stops %}
+          <option value="{{ stop }}">{{ stop }}</option>
+        {% endfor %}
+      </select>
+
+
+      <label>Arriving Time</label>
+      <input type="time" id="modalArrivingTime">
+
+      <label>Capacity</label>
+      <input type="number" id="modalCapacity">
+
+      <label>Driver</label>
+      <select id="modalDriver">
+        {% for d in drivers %}
+        <option value="{{ d.name }}">{{ d.name }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="modal-buttons">
+        <button class="save-btn" onclick="saveRoute()">Save</button>
+        <button class="delete-btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <!-- =========================================================== -->
+
   <script>
 
-  function saveNewRow(button) {
-  const row = button.closest("tr");
-  const cells = row.cells;
-
-  const busId = cells[0].textContent.trim();
-  const busStop = cells[1].textContent.trim();
-  const arrivingTime = cells[2].textContent.trim();
-  const capacity = cells[3].textContent.trim();
-  const driverName = cells[4].textContent.trim();
-
-  if (!busId || !busStop) {
-    alert("❌ Bus ID and Bus Stop are required!");
-    return;
-  }
-
-  fetch("/add_route", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      bus_id: busId,
-      bus_stop: busStop,
-      arriving_time: arrivingTime,
-      capacity: capacity,
-      driver_name: driverName
-    })
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        alert("✅ Route added successfully!");
-
-        // Remove yellow background
-        for (let i = 0; i < 5; i++) {
-          cells[i].style.background = "white";
-          cells[i].contentEditable = false;
-        }
-
-        // Replace Save button with Delete button only
-        cells[5].innerHTML = `
-            <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-        `;
-      } else {
-        alert("❌ Failed: " + data.message);
-      }
-    })
-    .catch(err => {
-      console.error("Error:", err);
-      alert("An error occurred while saving.");
-    });
-}
-
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("collapsed");
-    document.getElementById("mainContent").classList.toggle("collapsed");
-  }
-
-  function filterBus() {
-    const busId = document.getElementById("driverSelect").value;
-    if (busId) {
-      window.location.href = `{{ url_for('manage_routes') }}?bus_id=${busId}`;
-    } else {
-      window.location.href = `{{ url_for('manage_routes') }}`;
+    function addNewRow() {
+      document.getElementById("addBusModal").style.display = "flex";
+      loadDrivers();
+      loadBusStops();   // <---- ADD THIS
     }
-  }
 
-  // ✅ DELETE FUNCTION (Connected to Flask backend)
-  function deleteData(button) {
-    const row = button.closest("tr");
-    const busId = row.cells[0].textContent.trim();
-    const busStop = row.cells[1].textContent.trim();
+    // Load drivers dynamically from SQL
+    function loadDrivers() {
+        fetch("/get_drivers")
+            .then(res => res.json())
+            .then(data => {
+                const dropdown = document.getElementById("modalDriver");
+                dropdown.innerHTML = '<option value="">Select Driver</option>';
 
-    if (confirm(`Are you sure you want to delete route for Bus ID: ${busId}, Stop: ${busStop}?`)) {
-      fetch(`/delete_route`, {
+            data.drivers.forEach(name => {
+                let option = document.createElement("option");
+                option.value = name;       // send driver_name
+                option.textContent = name; // display driver_name
+                dropdown.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching drivers:", error));
+    }
+
+    
+    function loadBusStops() {
+        fetch("/get_bus_stops")
+          .then(response => response.json())
+          .then(data => {
+            const busStopSelect = document.getElementById("modalBusStop");
+            busStopSelect.innerHTML = "";  
+
+            data.stops.forEach(stop => {
+            let option = document.createElement("option");
+            option.value = stop;
+            option.textContent = stop;
+            busStopSelect.appendChild(option);
+          });
+        })
+        .catch(error => console.error("Error fetching bus stops:", error));
+    }
+
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+      document.getElementById("mainContent").classList.toggle("collapsed");
+    }
+
+    function filterBus() {
+      const busId = document.getElementById("busFilter").value;
+      if (busId)
+        window.location.href = `{{ url_for('manage_routes') }}?bus_id=${busId}`;
+      else
+        window.location.href = `{{ url_for('manage_routes') }}`;
+    }
+
+    /* ========== MODAL HANDLER ========== */
+    function openModal() {
+      document.getElementById("addRouteModal").style.display = "flex";
+      loadBusStops();
+      loadDrivers();
+    }
+
+
+    function closeModal() {
+      document.getElementById("addRouteModal").style.display = "none";
+    }
+
+    /* ========== SAVE ROUTE (POST JSON) ========== */
+    function saveRoute() {
+      const payload = {
+        bus_id: document.getElementById("modalBusId").value.trim(),
+        bus_stop: document.getElementById("modalBusStop").value.trim(),
+        arriving_time: document.getElementById("modalArrivingTime").value.trim(),
+        capacity: document.getElementById("modalCapacity").value.trim(),
+        driver_name: document.getElementById("modalDriver").value.trim()
+      };
+
+      if (!payload.bus_id || !payload.bus_stop) {
+        alert("❌ Bus ID and Bus Stop required");
+        return;
+      }
+
+      fetch("/add_route", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ bus_id: busId, bus_stop: busStop })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
           if (data.success) {
-            alert("✅ Record deleted successfully!");
-            row.remove(); // remove row visually
+            alert("✅ Route Added Successfully");
+            window.location.reload(); // Refresh to show new row
           } else {
-            alert("❌ Failed to delete record: " + data.message);
+            alert("❌ " + data.message);
           }
         })
-        .catch(error => {
-          console.error("Error deleting record:", error);
-          alert("An error occurred while deleting.");
+        .catch(err => {
+          alert("Error adding route");
+          console.error(err);
         });
     }
-  }
 
-  // Add new editable row
-  function addNewRow() {
-    const table = document.getElementById("outputTable").getElementsByTagName("tbody")[0];
-    const newRow = table.insertRow();
+    /* ========== DELETE ROUTE ========== */
+    function deleteData(button) {
+      const row = button.closest("tr");
+      const busId = row.cells[0].textContent.trim();
+      const busStop = row.cells[1].textContent.trim();
 
-    newRow.innerHTML = `
-      <td contenteditable="true" style="background:#fef3c7;"></td>
-      <td contenteditable="true" style="background:#fef3c7;"></td>
-      <td contenteditable="true" style="background:#fef3c7;"></td>
-      <td contenteditable="true" style="background:#fef3c7;"></td>
-      <td contenteditable="true" style="background:#fef3c7;"></td>
-      <td>
-        <button onclick="saveNewRow(this)" style="background:#10b981;">Save</button>
-        <button class="delete-btn" onclick="deleteData(this)">Delete</button>
-      </td>
-    `;
-  }
-</script>
+      if (!confirm(`Delete route for Bus ${busId} - Stop ${busStop}?`)) return;
+
+      fetch("/delete_route", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bus_id: busId, bus_stop: busStop })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            row.remove();
+          } else {
+            alert("❌ " + data.message);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+  </script>
 </body>
 
 </html>

@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mysqldb import MySQL
+from datetime import datetime, date
+from io import BytesIO
 import MySQLdb.cursors
 import re
 import qrcode
 import os
+import math
 
 # Create an app instance
 app = Flask(__name__)  
@@ -30,7 +33,7 @@ def admin_login():
         password = request.form['password']
         if ADMIN_CREDENTIALS.get(username) == password:
             session['admin_logged_in'] = True
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('manage_bus'))
         else:
             msg = 'Invalid credentials'
     return render_template('admin_login.html', msg=msg)
@@ -55,22 +58,17 @@ def manage_bus():
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute("""
         SELECT 
-            DISTINCT b.bus_id,
-            b.bus_number,
-            d.driver_name,
-            b.capacity
-        FROM Bus b
-        JOIN Bus_Route br ON b.bus_id = br.bus_id
-        JOIN Driver d ON br.driver_id = d.driver_id;
+            DISTINCT(Bus.bus_id), 
+            Bus.bus_number, 
+            Driver.driver_name
+        FROM Bus
+        LEFT JOIN Bus_Route ON Bus.bus_id = Bus_Route.bus_id
+        LEFT JOIN Driver ON Bus_Route.driver_id = Driver.driver_id;
     """)
     buses = cursor.fetchall()
 
-    # Fetch drivers
-    cursor.execute("SELECT driver_id, driver_name FROM Driver")
-    drivers = cursor.fetchall()
-
     cursor.close()
-    return render_template("manage_bus.html", buses=buses, drivers=drivers)
+    return render_template("manage_bus.html", buses=buses)
 
 # ------ manage bus functions ------- 
 
@@ -84,10 +82,15 @@ def get_drivers():
     driver_list = [d[0] for d in drivers]
     return jsonify({"drivers": driver_list})
 
-@app.route("/add_bus", methods=["POST"])
+@app.route("/add_bus", methods=["POST", "GET"])
 def add_bus():
+
+    today = date.today()
+
     data = request.get_json()
+    busID = data.get("busID")
     bus_number = data.get("bus_number")
+    busCapacity = data.get("busCapacity")
     driver_name = data.get("driver_name")
 
     if not bus_number or not driver_name:
@@ -97,11 +100,29 @@ def add_bus():
         cursor = mysql.connection.cursor()
 
         # Insert into bus table
-        query = """
-            INSERT INTO bus (bus_number, driver_name)
-            VALUES (%s, %s)
+        insert_bus = """
+            INSERT INTO bus (bus_id, bus_number, capacity)
+            VALUES (%s, %s, %s)
         """
-        cursor.execute(query, (bus_number, driver_name))
+        cursor.execute(insert_bus, (busID, bus_number, busCapacity))
+        mysql.connection.commit()
+
+        # Fetch driver ID by name
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT driver_id FROM Driver WHERE driver_name = %s", (driver_name,))
+        driver_row = cursor.fetchone()
+
+        if not driver_row:
+            return jsonify({"success": False, "message": "Driver not found"}), 404
+
+        driver_id = driver_row["driver_id"]
+
+        # Insert default route entry
+        insert_route = """
+            INSERT INTO Bus_Route (bus_id, bus_stop, arriving_time, route_date, driver_id)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_route, (busID, "JIET", "08:39:00", today, driver_id))
         mysql.connection.commit()
 
         return jsonify({"success": True, "message": "Bus added successfully"}), 200
@@ -156,19 +177,14 @@ def add_driver():
     driver_name = data.get("driver_name")
     phone_number = data.get("phone_number")
 
-    # Validate
     if not driver_name or not phone_number:
         return jsonify({"success": False, "message": "Driver name and phone number are required"}), 400
 
     try:
         cursor = mysql.connection.cursor()
 
-        query = """
-            INSERT INTO Driver (driver_name, phone_number)
-            VALUES (%s, %s)
-        """
+        query = "INSERT INTO Driver (driver_name, phone_number) VALUES (%s, %s)"
         cursor.execute(query, (driver_name, phone_number))
-
         mysql.connection.commit()
         cursor.close()
 
@@ -176,6 +192,7 @@ def add_driver():
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
+
 
 
 @app.route('/delete_driver', methods=['POST'])
@@ -248,20 +265,60 @@ def change_routes():
 
 # ------ manage routes functions ------- 
 
-@app.route('/add_route', methods=['POST'])
+@app.route("/get_bus_stops")
+def get_bus_stops():
+    cursor = mysql.connection.cursor()
+
+    # Fetch distinct stops
+    cursor.execute("SELECT DISTINCT bus_stop FROM bus_route ORDER BY bus_stop ASC")
+    stops = [row[0] for row in cursor.fetchall()]
+
+    cursor.close()
+
+    return jsonify({"stops": stops})
+
+@app.route('/add_route', methods=['POST', 'GET'])
 def add_route():
+    if request.method == 'GET':
+        return "This endpoint only accepts POST JSON requests."
+    
     data = request.get_json()
+    print(f"Received data: {data}")
 
     bus_id = data.get("bus_id")
     bus_stop = data.get("bus_stop")
     arriving_time = data.get("arriving_time")
-    route_date = data.get("route_date")  # New field needed
-    driver_id = data.get("driver_id")
+    route_date = data.get("route_date")
+    driver_name = data.get("driver_name")
 
     if not bus_id or not bus_stop:
         return jsonify({"success": False, "message": "Bus ID and Bus Stop are required"}), 400
 
+    # Validate optional fields
+    if route_date:
+        try:
+            datetime.strptime(route_date, "%Y-%m-%d")
+        except ValueError:
+            return jsonify({"success": False, "message": "route_date must be YYYY-MM-DD"}), 400
+
+    if arriving_time:
+        try:
+            datetime.strptime(arriving_time, "%H:%M")
+        except ValueError:
+            return jsonify({"success": False, "message": "arriving_time must be HH:MM"}), 400
+
     try:
+
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute("SELECT driver_id FROM Driver WHERE driver_name = %s", (driver_name,))
+        result = cursor.fetchone()
+
+        if not result:
+            return jsonify({"success": False, "message": "Driver not found"}), 404
+
+        driver_id = result["driver_id"]
+
+
         cursor = mysql.connection.cursor()
         query = """
             INSERT INTO Bus_Route (bus_id, bus_stop, arriving_time, route_date, driver_id)
@@ -269,13 +326,14 @@ def add_route():
         """
         cursor.execute(query, (bus_id, bus_stop, arriving_time, route_date, driver_id))
         mysql.connection.commit()
+        route_id = cursor.lastrowid
         cursor.close()
 
-        return jsonify({"success": True, "message": "Route added successfully!"})
+        return jsonify({"success": True, "message": "Route added successfully!", "route_id": route_id})
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
-
+    
 @app.route('/delete_route', methods=['POST'])
 def delete_route():
     data = request.get_json()
@@ -327,8 +385,17 @@ def logout():
 # -------------------- REGISTER --------------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    bus_stops = ['Paota', 'Ratanada', 'AIIMS', 'MIA', 'Chopsani']
     msg = ''
+
+    # Fetch bus stops
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("""
+            SELECT DISTINCT bus_stop
+            FROM bus_route 
+            ORDER BY bus_stop
+        """)
+    bus_stops = cursor.fetchall()
+    cursor.close()
 
     if request.method == 'POST':
         student_id = request.form.get('student_id')
@@ -351,55 +418,293 @@ def register():
             else:
                 hashed_password = generate_password_hash(password)
 
-                # ✅ Generate default image path from student_id
-                clean_id = student_id.replace('/', '')   # Remove slashes
+                clean_id = student_id.replace('/', '')
+                image_path = f"images/students_profile/{clean_id}.jpg"
 
-                image_path = f"images/students_profile/{clean_id}.jpg"  # You can adjust folder or extension if needed
+                # -------------------------
+                # Generate QR Code
+                # -------------------------
+                qr_data = (
+                    f"ID: {student_id}\n"
+                    f"Name: {name}\n"
+                    f"Dept: {department}\n"
+                    f"Year: {year}\n"
+                    f"Bus Stop: {bus_stop}\n"
+                    f"Email: {email}"
+                )
 
-                query = """INSERT INTO student 
-                           (student_id, name, department, year, bus_stop, email, password, image_path)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
-                values = (student_id, name, department, year, bus_stop, email, hashed_password, image_path)
+                qr = qrcode.QRCode(
+                    version=1,
+                    error_correction=qrcode.constants.ERROR_CORRECT_H,
+                    box_size=10,
+                    border=4
+                )
+                qr.add_data(qr_data)
+                qr.make(fit=True)
+                img = qr.make_image(fill_color="black", back_color="white")
+
+                qr_folder = "static/qr_codes"
+                if not os.path.exists(qr_folder):
+                    os.makedirs(qr_folder)
+
+                qr_filename = f"{qr_folder}/{clean_id}.png"
+                img.save(qr_filename)
+
+                # -------------------------
+                # Insert student with QR path
+                # -------------------------
+                query = """
+                    INSERT INTO student 
+                    (student_id, name, department, year, bus_stop, email, password, image_path, qr_code_path)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+
+                values = (
+                    student_id, name, department, year,
+                    bus_stop, email, hashed_password,
+                    image_path, qr_filename
+                )
 
                 cursor.execute(query, values)
                 mysql.connection.commit()
                 msg = 'Registered successfully!'
+
             cursor.close()
 
     return render_template('register.html', msg=msg, bus_stops=bus_stops)
 
 # -------------------- bus tracking system --------------------
+# -------------------------------------------------------------
+# Utility Functions
+# -------------------------------------------------------------
+
+def haversine(lat1, lon1, lat2, lon2):
+    """Distance between 2 GPS points in meters"""
+    R = 6371000  # Earth radius in meters
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+
+    a = (math.sin(dphi/2)**2 +
+         math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2)**2)
+
+    return 2 * R * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def timedelta_to_time_string(td):
+    total_seconds = int(td.total_seconds())
+    hours = (total_seconds // 3600) % 24
+    minutes = (total_seconds % 3600) // 60
+    return f"{hours:02d}:{minutes:02d}"
+
+
+# -------------------------------------------------------------
+# Data Access Layer
+# -------------------------------------------------------------
+
+class DB:
+
+    # get live GPS for bus
+    def get_live_location(self, bus_id):
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT latitude, longitude FROM live_location WHERE bus_id=%s", (bus_id,))
+        row = cursor.fetchone()
+        cursor.close()
+
+        if row:
+            return type("Obj", (object,), {"lat": row[0], "lng": row[1]})
+        else:
+            return None
+
+    # get list of stops with coordinates + order
+    def get_stops(self, bus_id):
+        cursor = mysql.connection.cursor()
+        cursor.execute("""
+            SELECT stop_order, stop_name, latitude, longitude 
+            FROM bus_stop_coordinates 
+            WHERE bus_id=%s 
+            ORDER BY stop_order
+        """, (bus_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+
+        stops = []
+        for row in rows:
+            stops.append(
+                type("Stop", (object,), {
+                    "stop_order": row[0],
+                    "stop_name": row[1],
+                    "lat": row[2],
+                    "lng": row[3]
+                })
+            )
+        return stops
+
+
+db = DB()
+
+
+# -------------------------------------------------------------
+# ROUTES
+# -------------------------------------------------------------
+
+# HTML page
 @app.route('/track_bus')
 def track_bus_page():
     return render_template('track_bus.html')
 
-# used for the 'bus ID' feature and 'Track My Bus'
+
+# list buses for dropdown
 @app.route('/get_buses')
 def get_buses():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT bus_id FROM bus")
     result = cursor.fetchall()
-    bus_ids = [row[0] for row in result]
     cursor.close()
+
+    bus_ids = [row[0] for row in result]
     return jsonify({"bus_ids": bus_ids})
 
 
-# Route to track a specific bus
-# used for the 'Bus ID' feature and 'Track My bus' feature
-@app.route('/current_location/<int:bus_id>', methods=['GET'])
-def get_bus_stops(bus_id):
+# timetable route
+@app.route("/current_location/<bus_id>")
+def current_location(bus_id):
     cursor = mysql.connection.cursor()
 
-    cursor.execute("SELECT bus_stop, arriving_time FROM bus_route WHERE bus_id = %s ORDER BY bus_stop", (bus_id,))
-    result = cursor.fetchall()
+    # Fetch route info
+    query = """
+        SELECT br.bus_stop, br.arriving_time, sc.latitude, sc.longitude, sc.stop_order
+        FROM Bus_Route br
+        LEFT JOIN bus_stop_coordinates sc 
+        ON br.bus_id = sc.bus_id AND br.bus_stop = sc.stop_name
+        WHERE br.bus_id = %s
+        ORDER BY sc.stop_order
+    """
+    cursor.execute(query, (bus_id,))
+    rows = cursor.fetchall()
 
-    stops = [row[0] for row in result]
-
+    # Fetch live location
+    cursor.execute("SELECT latitude, longitude FROM live_location WHERE bus_id=%s", (bus_id,))
+    live = cursor.fetchone()
     cursor.close()
 
-    return jsonify({"bus_id": bus_id, "stops": stops})
+    stops = []
 
-    
+    if not rows:
+        # No route/stops found
+        return jsonify({"stops": [{"stop_name": "No stops found", "arrival_time": "-", "status": "Not Available"}]})
+
+    if not live:
+        # Live location missing → mark all stops as Not Available
+        for row in rows:
+            stop_name, arriving_time, lat, lng, order = row
+            stops.append({
+                "stop_name": stop_name,
+                "arrival_time": str(arriving_time) if arriving_time else "-",
+                "status": "Not Available"
+            })
+        return jsonify({"stops": stops})
+
+    # Live location exists → classify normally
+    live_lat, live_lng = live
+    min_dist = float('inf')
+    current_order = None
+
+    for row in rows:
+        stop_name, arriving_time, lat, lng, order = row
+        if lat is None or lng is None:
+            continue  # skip stops without coordinates
+        dist = haversine(live_lat, live_lng, lat, lng)
+        if dist < min_dist:
+            min_dist = dist
+            current_order = order
+
+    for row in rows:
+        stop_name, arriving_time, lat, lng, order = row
+        if lat is None or lng is None or current_order is None:
+            status = "Not Available"
+        elif order < current_order:
+            status = "Passed"
+        elif order == current_order:
+            status = "Current"
+        else:
+            status = "Upcoming"
+
+        stops.append({
+            "stop_name": stop_name,
+            "arrival_time": str(arriving_time) if arriving_time else "-",
+            "status": status
+        })
+
+    return jsonify({"stops": stops})
+
+
+# classify stops as passed / current / upcoming
+@app.route("/bus_status/<bus_id>")
+def bus_status(bus_id):
+    # 1. live bus GPS
+    live = db.get_live_location(bus_id)
+    if live is None:
+        return jsonify({"error": "No live location found"}), 404
+
+    # 2. fetch all stops
+    stops = db.get_stops(bus_id)
+    if not stops:
+        return jsonify({"error": "No stops found"}), 404
+
+    min_dist = float("inf")
+    current_order = None
+
+    # 3. find nearest stop
+    for stop in stops:
+        dist = haversine(live.lat, live.lng, stop.lat, stop.lng)
+        if dist < min_dist:
+            min_dist = dist
+            current_order = stop.stop_order
+
+    result = []
+
+    # 4. classify
+    for stop in stops:
+        if stop.stop_order < current_order:
+            status = "passed"
+        elif stop.stop_order == current_order:
+            status = "current"
+        else:
+            status = "upcoming"
+
+        result.append({
+            "stop_name": stop.stop_name,
+            "stop_order": stop.stop_order,
+            "status": status
+        })
+
+    return jsonify(result)
+
+
+# driver sending live location
+@app.route("/update_location", methods=["POST"])
+def update_location():
+    data = request.json
+    bus_id = data["bus_id"]
+    lat = data["lat"]
+    lng = data["lng"]
+
+    print(f"bus id : {bus_id}")
+    cursor = mysql.connection.cursor()
+    cursor.execute("""
+        INSERT INTO live_location (bus_id, latitude, longitude)
+        VALUES (%s, %s, %s)
+        ON DUPLICATE KEY UPDATE
+            latitude=VALUES(latitude),
+            longitude=VALUES(longitude)
+    """, (bus_id, lat, lng))
+
+    mysql.connection.commit()
+    cursor.close()
+
+    return jsonify({"status": "updated"})
 
 # -------------------- Student functions --------------------
 

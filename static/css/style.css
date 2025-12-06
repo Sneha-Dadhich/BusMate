@@ -1,0 +1,466 @@
+/* ===============================================
+   JIET Theme Color Variables
+   =============================================== */
+:root {
+    --jiet-dark-blue: #0093d9;
+    --jiet-light-blue: #62ddff;
+    --jiet-yellow: #d2c600;
+    --jiet-grey: #7d7c7a;
+    --jiet-black: #363533;
+    --jiet-white: #e0e0df;
+}
+
+/* ===============================================
+   GLOBAL
+   =============================================== */
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--jiet-white);
+    color: var(--jiet-black);
+}
+
+h1, h2, h3, h4 {
+    display: flex;
+    justify-content: center;
+    color: var(--jiet-dark-blue);
+    font-weight: 700;
+    font-size: xx-large;
+    color: black;
+}
+
+
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;        /* space between title and logo */
+    margin-bottom: 20px;
+}
+
+.title-logo {
+    width: 60px;
+    height: auto;
+    border-radius: 10px;   /* optional styling */
+}
+
+/* ===============================================
+   MAIN CONTENT / CONTAINER
+   =============================================== */
+.container,
+.main-content {
+    margin-left: 260px;  /* sidebar 240px + 20px spacing */
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+.sidebar.collapsed ~ .container,
+.sidebar.collapsed ~ .main-content {
+    margin-left: 110px;
+}
+
+/* Card-like container */
+.container {
+    width: 85%;
+    background: var(--jiet-white);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--jiet-grey);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Logo on left side of the sidebar */
+.sidebar-logo-container {
+    width: 100%;
+    text-align: center;
+    padding: 15px 0;
+    margin-bottom: 10px;
+}
+
+.sidebar-logo {
+    width: 120px;
+    height: auto;
+    border-radius: 10px;
+    object-fit: contain;
+    color: transparent;
+}
+
+.sidebar.collapsed .sidebar-logo {
+    width: 60px;
+}
+
+/* ===============================================
+   TABLES — BEAUTIFIED
+   =============================================== */
+table {
+    width: 95%;                       /* slightly smaller table */
+    margin: 30px auto;                /* center + spacing */
+    border-collapse: collapse;
+    background: var(--jiet-white);
+    border-radius: 10px;
+    overflow: hidden;
+
+    /* lifted card effect */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transition: 0.3s ease-in-out;
+}
+
+table:hover {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.20);
+}
+
+/* Table header */
+table th {
+    padding: 10px 14px;                /* smaller header */
+    background-color: var(--jiet-dark-blue);
+    color: var(--jiet-white);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Table cell */
+table td {
+    padding: 10px 16px;                 /* reduced padding */
+    border-bottom: 1px solid var(--jiet-grey);
+    font-size: 15px;                   /* slightly smaller text */
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Hover highlight */
+table tbody tr:hover {
+    background: var(--jiet-light-blue);
+    color: var(--jiet-black);
+    transition: 0.3s;
+}
+
+/* Last row shouldn't have border */
+table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===============================================
+   BUTTONS
+   =============================================== */
+button {
+    font-family: inherit;
+}
+
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;   /* ensures button aligns consistently */
+  margin-bottom: 20px;
+}
+
+/* Add button */
+.add-btn {
+    background-color: var(--jiet-yellow);
+    color: var(--jiet-black);
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    font-weight: bold;
+    float: right;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+.add-btn:hover {
+    background-color: var(--jiet-dark-blue);
+    color: white;
+}
+
+/* Delete button */
+.delete-btn {
+    background-color: #d9534f;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 13px;
+}
+
+.delete-btn:hover {
+    background-color: #b52b27;
+}
+
+/* Save button */
+.save-btn {
+    background-color: var(--jiet-dark-blue);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    font-size: 14px;
+}
+
+.save-btn:hover {
+    background-color: var(--jiet-light-blue);
+    color: var(--jiet-black);
+}
+
+/* ===============================================
+   MODAL POPUP
+   =============================================== */
+.modal {
+    display: None;
+    position: fixed;
+    z-index: 15000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: var(--jiet-white);
+    padding: 25px;
+    width: 340px;
+    border-radius: 10px;
+    border: 2px solid var(--jiet-dark-blue);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content h3 {
+    text-align: center;
+    color: var(--jiet-dark-blue);
+    margin-bottom: 10px;
+}
+
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    padding: 7px;
+    margin: 6px 0 12px;
+    border-radius: 5px;
+    border: 1px solid var(--jiet-grey);
+}
+
+/* Modal buttons */
+.modal-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Modal animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ===============================================
+   SIDEBAR (Always visible on left)
+   =============================================== */
+.sidebar {
+    width: 240px;
+    background: var(--jiet-dark-blue);
+    color: var(--jiet-white);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transition: width 0.3s ease;
+    z-index: 9999;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar h2 {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 25px;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed h2 {
+    opacity: 0;
+}
+
+.sidebar a {
+    color: var(--jiet-white);
+    text-decoration: none;
+    padding: 10px 14px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    transition: 0.3s;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar a:hover {
+    background: var(--jiet-light-blue);
+    color: var(--jiet-black);
+}
+
+/* Hide menu text when collapsed */
+.sidebar.collapsed a span {
+    display: none;
+}
+
+/* Toggle button */
+.toggle-btn {
+    background: var(--jiet-yellow);
+    border: none;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.toggle-btn:hover {
+    background: var(--jiet-light-blue);
+}
+
+/* ===============================================
+   RESPONSIVE — Sidebar ALWAYS stays visible
+   =============================================== */
+@media (max-width: 900px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .sidebar.collapsed {
+        width: 80px;
+    }
+
+    .container,
+    .main-content {
+        margin-left: 240px;
+    }
+
+    .sidebar.collapsed ~ .container,
+    .sidebar.collapsed ~ .main-content {
+        margin-left: 110px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .sidebar {
+        width: 180px;
+    }
+
+    .sidebar.collapsed {
+        width: 70px;
+    }
+
+    .container,
+    .main-content {
+        margin-left: 210px;
+    }
+
+    .sidebar.collapsed ~ .container,
+    .sidebar.collapsed ~ .main-content {
+        margin-left: 100px;
+    }
+}
+
+/* Center the Bus ID dropdown block */
+#formContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;      /* Center horizontally */
+    margin: 20px 0;
+}
+
+/* Style label */
+#formContainer label {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0093d9;
+    margin-bottom: 8px;
+}
+
+/* Attractive dropdown style */
+#driverSelect {
+    width: 250px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    border: 2px solid #0093d9;
+    font-size: 16px;
+    font-weight: 500;
+    background: #eaf7ff;
+    color: #363533;
+
+    box-shadow: 0 4px 10px rgba(0, 147, 217, 0.15);
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+#driverSelect:hover {
+    background: #FFFAFA ;
+    transform: scale(1.03);
+}
+
+#driverSelect:focus {
+    outline: none;
+    border-color: #007bb8;
+    box-shadow: 0 0 10px rgba(0, 147, 217, 0.4);
+}
+
+/* ============================
+   BUS ID DROPDOWN — PREMIUM STYLE OF BUS MANAGEMENT FEATURE
+   ============================ */
+#busFilter {
+    width: 260px;
+    padding: 12px 15px;
+    border-radius: 14px;
+    border: 2px solid var(--jiet-dark-blue);
+    background: #f0faff;  /* light premium blue */
+    color: var(--jiet-black);
+
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+
+    box-shadow: 0 5px 14px rgba(0, 147, 217, 0.22);
+    transition: 0.25s ease-in-out;
+    cursor: pointer;
+    appearance: none; /* remove default arrow */
+    background-image: linear-gradient(45deg, var(--jiet-dark-blue), var(--jiet-light-blue));
+    background-origin: border-box;
+}
+
+/* Hover Effect */
+#busFilter:hover {
+    background: #ffffff;
+    transform: scale(1.04);
+    box-shadow: 0 8px 20px rgba(0, 147, 217, 0.26);
+}
+
+/* Focus Effect */
+#busFilter:focus {
+    outline: none;
+    border-color: var(--jiet-light-blue);
+    box-shadow: 0 0 12px rgba(0, 147, 217, 0.45);
+}
+
+/* Label for Bus ID */
+.bus-id-label {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--jiet-dark-blue);
+    margin-bottom: 6px;
+    text-align: center;
+}
+
